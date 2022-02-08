@@ -5,18 +5,18 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/b-open/jobbuzz/pkg/types"
+	"github.com/b-open/jobbuzz/pkg/model"
 	"github.com/gocolly/colly"
 )
 
-func ScrapeBruneida() []types.Job {
+func ScrapeBruneida() []model.Job {
 	allowedDomain := colly.AllowedDomains("www.bruneida.com")
 	linkCollector := colly.NewCollector(
 		allowedDomain,
 	)
 	jobCollector := linkCollector.Clone()
 
-	jobs := []types.Job{}
+	jobs := []model.Job{}
 
 	// Scraping the links
 	linkCollector.OnHTML("ul.list-az.ul-azs", func(e *colly.HTMLElement) {
@@ -44,7 +44,7 @@ func ScrapeBruneida() []types.Job {
 
 		location := strings.Join(locations, " ")
 
-		job := types.Job{
+		job := model.Job{
 			Title:    job_title,
 			Company:  company,
 			Salary:   salary,
