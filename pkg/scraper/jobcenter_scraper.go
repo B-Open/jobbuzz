@@ -8,8 +8,8 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func ScrapeJobcenter() types.Jobs {
-	jobs := types.Jobs{}
+func ScrapeJobcenter() []types.Job {
+	jobs := []types.Job{}
 
 	c := colly.NewCollector(
 		colly.AllowedDomains("www.jobcentrebrunei.gov.bn"),
@@ -32,9 +32,11 @@ func ScrapeJobcenter() types.Jobs {
 
 	})
 
-	c.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL.String())
-	})
+	collectors := []*colly.Collector{c}
+
+	HandleError(collectors)
+
+	HandleRequest(collectors)
 
 	// Limit to two pages
 	for i := 1; i < 3; i++ {

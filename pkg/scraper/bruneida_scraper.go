@@ -9,14 +9,14 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func ScrapeBruneida() types.Jobs {
+func ScrapeBruneida() []types.Job {
 	allowedDomain := colly.AllowedDomains("www.bruneida.com")
 	linkCollector := colly.NewCollector(
 		allowedDomain,
 	)
 	jobCollector := linkCollector.Clone()
 
-	jobs := types.Jobs{}
+	jobs := []types.Job{}
 
 	// Scraping the links
 	linkCollector.OnHTML("ul.list-az.ul-azs", func(e *colly.HTMLElement) {
@@ -33,22 +33,16 @@ func ScrapeBruneida() types.Jobs {
 		company := h.ChildText("#ad-contact ul li:first-child span.bb b.small")
 		salary := h.ChildText("#ad-body-inner .opt .opt-dl:nth-child(3) .dd")
 
-		location := ""
+		locations := []string{}
 		h.ForEach("#ad-body-inner .opt .opt-dl", func(i int, child *colly.HTMLElement) {
 			title := child.ChildText(".dt")
 
 			if strings.Contains(title, "City") || strings.Contains(title, "Local") {
-				s := child.ChildText(".dd")
-
-				if s == "" {
-					return
-				}
-
-				location += s + " "
+				locations = append(locations, child.ChildText(".dd"))
 			}
 		})
 
-		location = strings.TrimSuffix(location, " ")
+		location := strings.Join(locations, " ")
 
 		job := types.Job{
 			Title:    job_title,
@@ -60,14 +54,11 @@ func ScrapeBruneida() types.Jobs {
 		jobs = append(jobs, job)
 	})
 
-	// On Request Hooks
-	linkCollector.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL.String())
-	})
+	collectors := []*colly.Collector{linkCollector, jobCollector}
 
-	jobCollector.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL.String())
-	})
+	HandleError(collectors)
+
+	HandleRequest(collectors)
 
 	// Limit to one page
 	for i := 1; i < 2; i++ {

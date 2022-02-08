@@ -6,5 +6,3 @@ type Job struct {
 	Salary   string
 	Location string
 }
-
-type Jobs []Job
