@@ -1,13 +1,13 @@
 package model
 
-import "time"
+import (
+	"gorm.io/gorm"
+)
 
 type Job struct {
-	ID        uint `gorm:"primaryKey"`
-	Title     string
-	Company   string
-	Salary    string
-	Location  string
-	CreatedAt time.Time `gorm:"autoUpdateTime"`
-	UpdatedAt time.Time `gorm:"autoCreateTime"`
+	gorm.Model
+	Title    string
+	Company  string
+	Salary   string
+	Location string
 }
