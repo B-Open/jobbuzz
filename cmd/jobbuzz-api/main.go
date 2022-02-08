@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"github.com/b-open/jobbuzz/pkg/controller"
+	"github.com/gin-gonic/gin"
+)
 
 func main() {
-    fmt.Println("hello world")
+	r := gin.Default()
+	r.GET("/ping", controller.Ping)
+	r.Run()
 }
