@@ -4,12 +4,21 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/b-open/jobbuzz/internal/config"
 	"github.com/b-open/jobbuzz/pkg/scraper"
 )
 
 func main() {
+	db := config.GetDb()
+
+	config.MigrateDb(db)
+
 	fmt.Println("Fetching jobs from JobCenter")
 	jobs := scraper.ScrapeJobcenter()
+
+	for _, job := range jobs {
+		db.Create(&job)
+	}
 
 	json_jobs, err := json.Marshal(jobs)
 
@@ -23,6 +32,10 @@ func main() {
 	fmt.Println("Fetching jobs from Bruneida")
 	jobs = scraper.ScrapeBruneida()
 
+	for _, job := range jobs {
+		db.Create(&job)
+	}
+
 	json_jobs, err = json.Marshal(jobs)
 
 	if err != nil {
@@ -31,4 +44,8 @@ func main() {
 
 	fmt.Println("Printing jobs from Bruneida")
 	fmt.Println(string(json_jobs))
+
+	dbInstance, _ := db.DB()
+
+	dbInstance.Close()
 }

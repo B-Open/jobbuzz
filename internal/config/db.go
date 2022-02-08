@@ -3,12 +3,13 @@ package config
 import (
 	"log"
 
+	"github.com/b-open/jobbuzz/pkg/types"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func GetDb() *gorm.DB {
-	dsn := "host=localhost user=jobbuzz password=secret dbname=jobbuzz port=5532 sslmode=disable TimeZone=Asia/Brunei"
+	dsn := "host=localhost user=jobbuzz password=secret dbname=jobbuzz port=5432 sslmode=disable TimeZone=Asia/Brunei"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
@@ -16,4 +17,8 @@ func GetDb() *gorm.DB {
 	}
 
 	return db
+}
+
+func MigrateDb(db *gorm.DB) {
+	db.AutoMigrate(&types.Job{})
 }
