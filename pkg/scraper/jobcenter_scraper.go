@@ -41,7 +41,7 @@ func ScrapeJobcenter() []types.Job {
 	// Limit to two pages
 	for i := 1; i < 3; i++ {
 
-		url := fmt.Sprintf("https://www.jobcentrebrunei.gov.bn/web/guest/search-job?q=&start=%s", strconv.Itoa(i))
+		url := fmt.Sprintf("https://www.jobcentrebrunei.gov.bn/web/guest/search-job?q=&delta=200&start=%s", strconv.Itoa(i))
 
 		if err := c.Visit(url); err != nil {
 			fmt.Println("Error: ", err)
