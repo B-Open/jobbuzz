@@ -9,7 +9,7 @@ import (
 )
 
 func ScrapeJobcenter() types.Jobs {
-	jobs := make(types.Jobs, 0)
+	jobs := types.Jobs{}
 
 	c := colly.NewCollector(
 		colly.AllowedDomains("www.jobcentrebrunei.gov.bn"),

@@ -14,12 +14,9 @@ func ScrapeBruneida() types.Jobs {
 	linkCollector := colly.NewCollector(
 		allowedDomain,
 	)
-	jobCollector := colly.NewCollector(
-		allowedDomain,
-	)
+	jobCollector := linkCollector.Clone()
 
-	// links := make(links, 0)
-	jobs := make(types.Jobs, 0)
+	jobs := types.Jobs{}
 
 	// Scraping the links
 	linkCollector.OnHTML("ul.list-az.ul-azs", func(e *colly.HTMLElement) {
@@ -36,19 +33,22 @@ func ScrapeBruneida() types.Jobs {
 		company := h.ChildText("#ad-contact ul li:first-child span.bb b.small")
 		salary := h.ChildText("#ad-body-inner .opt .opt-dl:nth-child(3) .dd")
 
-		fmt.Println(job_title)
-		fmt.Println(company)
-		fmt.Println(salary)
-
 		location := ""
 		h.ForEach("#ad-body-inner .opt .opt-dl", func(i int, child *colly.HTMLElement) {
 			title := child.ChildText(".dt")
 
 			if strings.Contains(title, "City") || strings.Contains(title, "Local") {
 				s := child.ChildText(".dd")
-				location = location + s + " "
+
+				if s == "" {
+					return
+				}
+
+				location += s + " "
 			}
 		})
+
+		location = strings.TrimSuffix(location, " ")
 
 		job := types.Job{
 			Title:    job_title,
