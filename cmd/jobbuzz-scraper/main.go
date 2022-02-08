@@ -9,9 +9,8 @@ import (
 )
 
 func main() {
+	config.InitDb()
 	db := config.GetDb()
-
-	config.MigrateDb(db)
 
 	fmt.Println("Fetching jobs from JobCenter")
 	jobs := scraper.ScrapeJobcenter()
@@ -44,8 +43,4 @@ func main() {
 
 	fmt.Println("Printing jobs from Bruneida")
 	fmt.Println(string(json_jobs))
-
-	dbInstance, _ := db.DB()
-
-	dbInstance.Close()
 }
