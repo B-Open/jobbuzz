@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/b-open/jobbuzz/pkg/model"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -13,8 +13,8 @@ var Db gorm.DB
 // initialise DB once
 func InitDb() {
 	// TODO: 12-Factor the connection string
-	dsn := "host=localhost user=jobbuzz password=secret dbname=jobbuzz port=5432 sslmode=disable TimeZone=Asia/Brunei"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	dsn := "jobbuzz:secret@tcp(127.0.0.1:3306)/jobbuzz?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {
 		log.Fatal("Fail to connect to DB", err)

@@ -3,13 +3,15 @@ version: '3.1'
 services:
 
   db:
-    image: postgres
+    image: 'mysql:8.0'
     ports:
-      - 5432:5432
+      - 3306:3306
     environment:
-      POSTGRES_DB: jobbuzz
-      POSTGRES_USER: jobbuzz
-      POSTGRES_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: rootsecret
+      MYSQL_DATABASE: jobbuzz
+      MYSQL_USER: jobbuzz
+      MYSQL_PASSWORD: secret
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
 
   adminer:
     image: adminer
