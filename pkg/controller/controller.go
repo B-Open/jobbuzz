@@ -11,6 +11,7 @@ func Ping(c *gin.Context) {
 	})
 }
 
+// Temporary for testing
 func ScrapeJobcenter(c *gin.Context) {
 	jobs := scraper.ScrapeJobcenter()
 	c.JSON(200, gin.H{
@@ -19,6 +20,7 @@ func ScrapeJobcenter(c *gin.Context) {
 	})
 }
 
+// Temporary for testing
 func ScrapeBruneida(c *gin.Context) {
 	jobs := scraper.ScrapeBruneida()
 	c.JSON(200, gin.H{
