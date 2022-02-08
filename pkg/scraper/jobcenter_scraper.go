@@ -10,7 +10,6 @@ import (
 
 func ScrapeJobcenter() types.Jobs {
 	jobs := make(types.Jobs, 0)
-	stop := false
 
 	c := colly.NewCollector(
 		colly.AllowedDomains("www.jobcentrebrunei.gov.bn"),
@@ -39,10 +38,6 @@ func ScrapeJobcenter() types.Jobs {
 
 	// Limit to two pages
 	for i := 1; i < 3; i++ {
-
-		if stop {
-			break
-		}
 
 		url := fmt.Sprintf("https://www.jobcentrebrunei.gov.bn/web/guest/search-job?q=&start=%s", strconv.Itoa(i))
 
