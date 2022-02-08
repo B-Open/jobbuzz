@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/b-open/jobbuzz/cmd/jobbuzz-api/controller"
+	"github.com/b-open/jobbuzz/pkg/controller"
 	"github.com/gin-gonic/gin"
 )
 
