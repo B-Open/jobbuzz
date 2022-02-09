@@ -11,7 +11,6 @@ import (
 var Db gorm.DB
 
 func GetDb(dbConfig DbConfig) (*gorm.DB, error) {
-	// TODO: 12-Factor the connection string
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		dbConfig.Username,
