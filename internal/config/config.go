@@ -20,6 +20,11 @@ var configuration Configuration
 
 func LoadConfig(path string) (*Configuration, error) {
 
+	viper.AddConfigPath(path)
+	viper.SetConfigName(".env")
+	viper.SetConfigType("env")
+	viper.AutomaticEnv()
+
 	// load the db configuration
 	dbConfig, err := loadDbConfig(path)
 
@@ -33,11 +38,6 @@ func LoadConfig(path string) (*Configuration, error) {
 }
 
 func loadDbConfig(path string) (*DbConfig, error) {
-	viper.AddConfigPath(path)
-	viper.SetConfigName(".env")
-	viper.SetConfigType("env")
-
-	viper.AutomaticEnv()
 
 	err := viper.ReadInConfig()
 	if err != nil {
