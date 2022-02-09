@@ -18,9 +18,9 @@ func main() {
 		log.Fatal("Fail to load db config", err)
 	}
 
-	dbConfig := configuration.GetDbConfig()
+	dbConfig := configuration.DbConfig
 
-	db, err := config.GetDb(*dbConfig)
+	db, err := config.GetDb(dbConfig)
 
 	if err != nil {
 		log.Fatal("Fail to get db connection", err)

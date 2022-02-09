@@ -32,10 +32,6 @@ func LoadConfig(path string) (*Config, error) {
 	return &config, nil
 }
 
-func (c *Config) GetDbConfig() *DbConfig {
-	return &c.DbConfig
-}
-
 func loadDbConfig(path string) (*DbConfig, error) {
 	viper.AddConfigPath(path)
 	viper.SetConfigName(".env")
