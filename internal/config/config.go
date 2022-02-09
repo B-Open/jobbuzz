@@ -4,6 +4,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+type Config struct {
+	DbConfig DbConfig
+}
+
 type DbConfig struct {
 	Host     string `mapstructure:"DB_HOST"`
 	Port     string `mapstructure:"DB_PORT"`
@@ -12,9 +16,9 @@ type DbConfig struct {
 	Database string `mapstructure:"DB_DATABASE"`
 }
 
-var dbConfig DbConfig
+var config Config
 
-func LoadDbConfig(path string) (*DbConfig, error) {
+func LoadConfig(path string) (*Config, error) {
 	viper.AddConfigPath(path)
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
@@ -26,10 +30,18 @@ func LoadDbConfig(path string) (*DbConfig, error) {
 		return nil, err
 	}
 
+	var dbConfig DbConfig
+
 	err = viper.Unmarshal(&dbConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	return &dbConfig, nil
+	config.DbConfig = dbConfig
+
+	return &config, nil
+}
+
+func (c *Config) GetDbConfig() *DbConfig {
+	return &c.DbConfig
 }
