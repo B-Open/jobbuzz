@@ -15,7 +15,5 @@ func GetDb() (*gorm.DB, error) {
 }
 
 func MigrateDb(db *gorm.DB) error {
-	err := db.AutoMigrate(&model.Job{})
-
-	return err
+	return db.AutoMigrate(&model.Job{})
 }
