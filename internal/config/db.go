@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/b-open/jobbuzz/pkg/model"
 	gomysql "github.com/go-sql-driver/mysql"
@@ -30,6 +31,7 @@ func (configuration *Configuration) getDbConfig() *gomysql.Config {
 	mysqlConfig.Passwd = dbConfig.Password
 	mysqlConfig.DBName = dbConfig.Database
 	mysqlConfig.ParseTime = true
+	mysqlConfig.Loc = time.Local
 
 	return mysqlConfig
 }
