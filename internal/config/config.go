@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Config struct {
+type Configuration struct {
 	DbConfig DbConfig
 }
 
@@ -16,9 +16,9 @@ type DbConfig struct {
 	Database string `mapstructure:"DB_DATABASE"`
 }
 
-var config Config
+var configuration Configuration
 
-func LoadConfig(path string) (*Config, error) {
+func LoadConfig(path string) (*Configuration, error) {
 
 	// load the db configuration
 	dbConfig, err := loadDbConfig(path)
@@ -27,9 +27,9 @@ func LoadConfig(path string) (*Config, error) {
 		return nil, err
 	}
 
-	config.DbConfig = *dbConfig
+	configuration.DbConfig = *dbConfig
 
-	return &config, nil
+	return &configuration, nil
 }
 
 func loadDbConfig(path string) (*DbConfig, error) {
