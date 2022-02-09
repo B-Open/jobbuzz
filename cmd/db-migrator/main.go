@@ -14,5 +14,9 @@ func main() {
 		log.Fatal("Fail to get db connection", err)
 	}
 
-	config.MigrateDb(db)
+	err = config.MigrateDb(db)
+
+	if err != nil {
+		log.Fatal("Fail to migrate db", err)
+	}
 }

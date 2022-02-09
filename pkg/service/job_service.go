@@ -7,21 +7,17 @@ import (
 func (s *Service) GetJobs() ([]model.Job, error) {
 	var jobs []model.Job
 
-	results := s.Database.Find(&jobs)
+	results := s.DB.Find(&jobs)
 
 	if err := results.Error; err != nil {
 		return nil, err
-	}
-
-	if results.RowsAffected < 1 {
-		return make([]model.Job, 0), nil
 	}
 
 	return jobs, nil
 }
 
 func (s *Service) CreateJob(job *model.Job) (*model.Job, error) {
-	result := s.Database.Create(&job)
+	result := s.DB.Create(&job)
 
 	if err := result.Error; err != nil {
 		return nil, err

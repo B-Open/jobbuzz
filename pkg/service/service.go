@@ -3,5 +3,5 @@ package service
 import "gorm.io/gorm"
 
 type Service struct {
-	Database *gorm.DB
+	DB *gorm.DB
 }

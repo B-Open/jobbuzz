@@ -17,7 +17,7 @@ func main() {
 		log.Fatal("Fail to get db connection", err)
 	}
 
-	service := service.Service{Database: db}
+	service := service.Service{DB: db}
 
 	fmt.Println("Fetching jobs from JobCenter")
 	jobs := scraper.ScrapeJobcenter()

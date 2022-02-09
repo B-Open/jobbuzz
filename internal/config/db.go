@@ -1,8 +1,6 @@
 package config
 
 import (
-	"log"
-
 	"github.com/b-open/jobbuzz/pkg/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -16,10 +14,8 @@ func GetDb() (*gorm.DB, error) {
 	return gorm.Open(mysql.Open(dsn), &gorm.Config{})
 }
 
-func MigrateDb(db *gorm.DB) {
+func MigrateDb(db *gorm.DB) error {
 	err := db.AutoMigrate(&model.Job{})
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	return err
 }

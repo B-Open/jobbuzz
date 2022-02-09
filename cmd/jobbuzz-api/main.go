@@ -16,7 +16,7 @@ func main() {
 		log.Fatal("Fail to get db connection", err)
 	}
 
-	service := service.Service{Database: db}
+	service := service.Service{DB: db}
 	controller := controller.Controller{Service: &service}
 
 	r := gin.Default()
