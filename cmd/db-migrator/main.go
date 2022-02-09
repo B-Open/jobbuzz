@@ -8,7 +8,13 @@ import (
 
 func main() {
 
-	db, err := config.GetDb()
+	dbCofig, err := config.LoadDbConfig("../../")
+
+	if err != nil {
+		log.Fatal("Fail to load db config", err)
+	}
+
+	db, err := config.GetDb(*dbCofig)
 
 	if err != nil {
 		log.Fatal("Fail to get db connection", err)
