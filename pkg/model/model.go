@@ -1,13 +1,22 @@
 package model
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
+type BaseModel struct {
+	ID        uint           `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time      `json:"createdAt"`
+	UpdatedAt time.Time      `json:"updatedAt"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"deletedAt"`
+}
+
 type Job struct {
-	gorm.Model
-	Title    string
-	Company  string
-	Salary   string
-	Location string
+	BaseModel
+	Title    string `json:"title"`
+	Company  string `json:"company"`
+	Salary   string `json:"salary"`
+	Location string `json:"location"`
 }

@@ -8,9 +8,9 @@ services:
       - 3306:3306
     environment:
       MYSQL_ROOT_PASSWORD: rootsecret
-      MYSQL_DATABASE: jobbuzz
-      MYSQL_USER: jobbuzz
-      MYSQL_PASSWORD: secret
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
 
   adminer:
     image: adminer

@@ -11,7 +11,14 @@ import (
 )
 
 func main() {
-	db, err := config.GetDb()
+
+	configuration, err := config.LoadConfig("../../")
+
+	if err != nil {
+		log.Fatal("Fail to load db config", err)
+	}
+
+	db, err := configuration.GetDb()
 
 	if err != nil {
 		log.Fatal("Fail to get db connection", err)
