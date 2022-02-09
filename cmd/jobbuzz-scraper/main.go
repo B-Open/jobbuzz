@@ -3,13 +3,28 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
+	"github.com/b-open/jobbuzz/internal/config"
 	"github.com/b-open/jobbuzz/pkg/scraper"
+	"github.com/b-open/jobbuzz/pkg/service"
 )
 
 func main() {
+	db, err := config.GetDb()
+
+	if err != nil {
+		log.Fatal("Fail to get db connection", err)
+	}
+
+	service := service.Service{DB: db}
+
 	fmt.Println("Fetching jobs from JobCenter")
 	jobs := scraper.ScrapeJobcenter()
+
+	for _, job := range jobs {
+		service.CreateJob(&job)
+	}
 
 	json_jobs, err := json.Marshal(jobs)
 
@@ -22,6 +37,10 @@ func main() {
 
 	fmt.Println("Fetching jobs from Bruneida")
 	jobs = scraper.ScrapeBruneida()
+
+	for _, job := range jobs {
+		service.CreateJob(&job)
+	}
 
 	json_jobs, err = json.Marshal(jobs)
 

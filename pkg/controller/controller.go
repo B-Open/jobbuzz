@@ -1,9 +1,13 @@
 package controller
 
 import (
-	"github.com/b-open/jobbuzz/pkg/scraper"
+	"github.com/b-open/jobbuzz/pkg/service"
 	"github.com/gin-gonic/gin"
 )
+
+type Controller struct {
+	Service *service.Service
+}
 
 func Ping(c *gin.Context) {
 	c.JSON(200, gin.H{
@@ -11,18 +15,13 @@ func Ping(c *gin.Context) {
 	})
 }
 
-// Temporary for testing
-func ScrapeJobcenter(c *gin.Context) {
-	jobs := scraper.ScrapeJobcenter()
-	c.JSON(200, gin.H{
-		"success": true,
-		"jobs":    jobs,
-	})
-}
+func (controller *Controller) GetJobs(c *gin.Context) {
+	jobs, err := controller.Service.GetJobs()
 
-// Temporary for testing
-func ScrapeBruneida(c *gin.Context) {
-	jobs := scraper.ScrapeBruneida()
+	if err != nil {
+		panic(err)
+	}
+
 	c.JSON(200, gin.H{
 		"success": true,
 		"jobs":    jobs,

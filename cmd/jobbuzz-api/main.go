@@ -1,15 +1,25 @@
 package main
 
 import (
+	"log"
+
+	"github.com/b-open/jobbuzz/internal/config"
 	"github.com/b-open/jobbuzz/pkg/controller"
+	"github.com/b-open/jobbuzz/pkg/service"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", controller.Ping)
-	r.GET("/scrape-jobcenter", controller.ScrapeJobcenter)
-	r.GET("/scrape-bruneida", controller.ScrapeBruneida)
-	r.Run()
+	db, err := config.GetDb()
 
+	if err != nil {
+		log.Fatal("Fail to get db connection", err)
+	}
+
+	service := service.Service{DB: db}
+	controller := controller.Controller{Service: &service}
+
+	r := gin.Default()
+	r.GET("/api/jobs", controller.GetJobs)
+	r.Run()
 }

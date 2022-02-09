@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/b-open/jobbuzz/pkg/types"
+	"github.com/b-open/jobbuzz/pkg/model"
 	"github.com/gocolly/colly"
 )
 
-func ScrapeJobcenter() []types.Job {
-	jobs := []types.Job{}
+func ScrapeJobcenter() []model.Job {
+	jobs := []model.Job{}
 
 	c := colly.NewCollector(
 		colly.AllowedDomains("www.jobcentrebrunei.gov.bn"),
@@ -21,7 +21,7 @@ func ScrapeJobcenter() []types.Job {
 		salary := e.ChildText(".jp_job_post_right_cont>ul li:first-child")
 		location := e.ChildText(".jp_job_post_right_cont>ul li:nth-child(2)")
 
-		job := types.Job{
+		job := model.Job{
 			Title:    job_title,
 			Company:  company,
 			Salary:   salary,
