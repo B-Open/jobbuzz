@@ -19,6 +19,24 @@ type DbConfig struct {
 var config Config
 
 func LoadConfig(path string) (*Config, error) {
+
+	// load the db configuration
+	dbConfig, err := loadDbConfig(path)
+
+	if err != nil {
+		return nil, err
+	}
+
+	config.DbConfig = *dbConfig
+
+	return &config, nil
+}
+
+func (c *Config) GetDbConfig() *DbConfig {
+	return &c.DbConfig
+}
+
+func loadDbConfig(path string) (*DbConfig, error) {
 	viper.AddConfigPath(path)
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
@@ -37,11 +55,5 @@ func LoadConfig(path string) (*Config, error) {
 		return nil, err
 	}
 
-	config.DbConfig = dbConfig
-
-	return &config, nil
-}
-
-func (c *Config) GetDbConfig() *DbConfig {
-	return &c.DbConfig
+	return &dbConfig, nil
 }
