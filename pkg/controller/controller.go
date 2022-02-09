@@ -5,14 +5,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Controller struct {
+	Service *service.Service
+}
+
 func Ping(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "pong",
 	})
 }
 
-func GetJobs(c *gin.Context) {
-	jobs := service.GetJobs()
+func (controller *Controller) GetJobs(c *gin.Context) {
+	jobs, err := controller.Service.GetJobs()
+
+	if err != nil {
+		panic(err)
+	}
+
 	c.JSON(200, gin.H{
 		"success": true,
 		"jobs":    jobs,

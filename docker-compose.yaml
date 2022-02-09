@@ -1,4 +1,4 @@
-version: '3.1'
+version: '3.8'
 
 services:
 
@@ -11,7 +11,6 @@ services:
       MYSQL_DATABASE: jobbuzz
       MYSQL_USER: jobbuzz
       MYSQL_PASSWORD: secret
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
 
   adminer:
     image: adminer

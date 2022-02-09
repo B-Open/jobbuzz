@@ -1,12 +1,18 @@
 package main
 
-import "github.com/b-open/jobbuzz/internal/config"
+import (
+	"log"
+
+	"github.com/b-open/jobbuzz/internal/config"
+)
 
 func main() {
 
-	config.InitDb()
+	db, err := config.GetDb()
 
-	db := config.GetDb()
+	if err != nil {
+		log.Fatal("Fail to get db connection", err)
+	}
 
 	config.MigrateDb(db)
 }

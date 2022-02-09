@@ -1,22 +1,31 @@
 package service
 
 import (
-	"log"
-
-	"github.com/b-open/jobbuzz/internal/config"
 	"github.com/b-open/jobbuzz/pkg/model"
 )
 
-func GetJobs() []model.Job {
-	db := config.GetDb()
-
+func (s *Service) GetJobs() ([]model.Job, error) {
 	var jobs []model.Job
 
-	results := db.Find(&jobs)
+	results := s.Database.Find(&jobs)
 
 	if err := results.Error; err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return jobs
+	if results.RowsAffected < 1 {
+		return make([]model.Job, 0), nil
+	}
+
+	return jobs, nil
+}
+
+func (s *Service) CreateJob(job *model.Job) (*model.Job, error) {
+	result := s.Database.Create(&job)
+
+	if err := result.Error; err != nil {
+		return nil, err
+	}
+
+	return job, nil
 }
