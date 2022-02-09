@@ -12,7 +12,7 @@ import (
 var Db gorm.DB
 
 func (configuration *Configuration) GetDb() (*gorm.DB, error) {
-	dsn := configuration.formatDsn().FormatDSN()
+	dsn := configuration.getDbConfig().FormatDSN()
 	return gorm.Open(mysql.Open(dsn), &gorm.Config{})
 }
 
@@ -20,7 +20,7 @@ func MigrateDb(db *gorm.DB) error {
 	return db.AutoMigrate(&model.Job{})
 }
 
-func (configuration *Configuration) formatDsn() *gomysql.Config {
+func (configuration *Configuration) getDbConfig() *gomysql.Config {
 	dbConfig := configuration.DbConfig
 
 	mysqlConfig := gomysql.NewConfig()
