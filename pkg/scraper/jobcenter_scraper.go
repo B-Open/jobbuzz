@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 
 	"github.com/b-open/jobbuzz/internal/util"
@@ -10,7 +11,7 @@ import (
 )
 
 const (
-	delta = 10
+	delta = 30
 )
 
 func ScrapeJobcenter() []model.Job {
@@ -25,14 +26,16 @@ func ScrapeJobcenter() []model.Job {
 	jobsCollector := linksCollector.Clone()
 
 	linksCollector.OnHTML("li.list-group-item.list-group-item-flex", func(e *colly.HTMLElement) {
-		job_title := e.ChildText(".jp_job_post_right_cont h4 a")
+		jobTitle := e.ChildText(".jp_job_post_right_cont h4 a")
 		company := e.ChildText(".jp_job_post_right_cont p a")
 		salary := e.ChildText(".jp_job_post_right_cont>ul li:first-child")
 		location := e.ChildText(".jp_job_post_right_cont>ul li:nth-child(2)")
 		link := e.ChildAttr(".jp_job_post_right_cont h4 a", "href")
+		jobId := getJobcenterJobId(link)
 
 		job := model.Job{
-			Title:    job_title,
+			JobId:    jobId,
+			Title:    jobTitle,
 			Company:  company,
 			Salary:   salary,
 			Location: location,
@@ -80,4 +83,9 @@ func ScrapeJobcenter() []model.Job {
 	}
 
 	return jobs
+}
+
+func getJobcenterJobId(s string) string {
+	r := regexp.MustCompile(`^\/web\/guest\/view-job\/-\/jobs\/(?P<jobId>\d+)\/.*$`)
+	return fmt.Sprintf("jobcenter-%s", r.FindStringSubmatch(s)[1])
 }

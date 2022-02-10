@@ -17,7 +17,7 @@ func (s *Service) GetJobs() ([]model.Job, error) {
 }
 
 func (s *Service) CreateJob(job *model.Job) (*model.Job, error) {
-	result := s.DB.Create(&job)
+	result := s.DB.FirstOrCreate(&job, model.Job{JobId: job.JobId})
 
 	if err := result.Error; err != nil {
 		return nil, err

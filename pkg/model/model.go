@@ -15,6 +15,7 @@ type BaseModel struct {
 
 type Job struct {
 	BaseModel
+	JobId       string `json:"jobId"`
 	Title       string `json:"title"`
 	Company     string `json:"company"`
 	Salary      string `json:"salary"`
