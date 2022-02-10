@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/b-open/jobbuzz/internal/util"
 	"github.com/b-open/jobbuzz/pkg/model"
 	"github.com/gocolly/colly"
 )
@@ -17,13 +18,14 @@ func ScrapeBruneida() []model.Job {
 	jobCollector := linkCollector.Clone()
 
 	jobs := []model.Job{}
+	links := []string{}
 
 	// Scraping the links
 	linkCollector.OnHTML("ul.list-az.ul-azs", func(e *colly.HTMLElement) {
 		e.ForEach(".az-detail>h3.az-title>a.h-elips", func(i int, child *colly.HTMLElement) {
 			link := child.Attr("href")
 			jobCollector.Visit(link)
-
+			links = append(links, link)
 		})
 	})
 
@@ -32,6 +34,7 @@ func ScrapeBruneida() []model.Job {
 		job_title := h.ChildText("#title-box-inner div.inline-block.pull-left h1")
 		company := h.ChildText("#ad-contact ul li:first-child span.bb b.small")
 		salary := h.ChildText("#ad-body-inner .opt .opt-dl:nth-child(3) .dd")
+		description := util.StandardizeSpaces(h.ChildText("#full-description"))
 
 		locations := []string{}
 		h.ForEach("#ad-body-inner .opt .opt-dl", func(i int, child *colly.HTMLElement) {
@@ -45,10 +48,11 @@ func ScrapeBruneida() []model.Job {
 		location := strings.Join(locations, " ")
 
 		job := model.Job{
-			Title:    job_title,
-			Company:  company,
-			Salary:   salary,
-			Location: location,
+			Title:       job_title,
+			Company:     company,
+			Salary:      salary,
+			Location:    location,
+			Description: description,
 		}
 
 		jobs = append(jobs, job)
@@ -66,7 +70,10 @@ func ScrapeBruneida() []model.Job {
 		linkCollector.Visit(url)
 	}
 
-	jobCollector.Visit("https://www.bruneida.com/FEMALE-SALES-ASSISTANT-106578")
+	// Adding links to the existing jobs slice
+	for i := range jobs {
+		jobs[i].Link = links[i]
+	}
 
 	return jobs
 
