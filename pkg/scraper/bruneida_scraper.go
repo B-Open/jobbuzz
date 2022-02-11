@@ -1,4 +1,4 @@
-package scraper
+package scraper_backup
 
 import (
 	"errors"
@@ -10,10 +10,6 @@ import (
 	"github.com/b-open/jobbuzz/internal/util"
 	"github.com/b-open/jobbuzz/pkg/model"
 	"github.com/gocolly/colly"
-)
-
-const (
-	bruneidaProvider = "bruneida"
 )
 
 func ScrapeBruneida() []model.Job {
