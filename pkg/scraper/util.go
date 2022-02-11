@@ -3,6 +3,7 @@ package scraper
 import (
 	"fmt"
 
+	"github.com/b-open/jobbuzz/pkg/model"
 	"github.com/gocolly/colly"
 )
 
@@ -20,4 +21,13 @@ func HandleRequest(collectors []*colly.Collector) {
 			fmt.Println("Visiting", r.URL.String())
 		})
 	}
+}
+
+func ConvertJobMapToJobSlice(jobMap map[string]model.Job) []model.Job {
+	jobs := []model.Job{}
+	for _, job := range jobMap {
+		jobs = append(jobs, job)
+	}
+
+	return jobs
 }

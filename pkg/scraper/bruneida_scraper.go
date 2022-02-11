@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -11,6 +12,10 @@ import (
 	"github.com/gocolly/colly"
 )
 
+const (
+	bruneidaProvider = "bruneida"
+)
+
 func ScrapeBruneida() []model.Job {
 	allowedDomain := colly.AllowedDomains("www.bruneida.com")
 	linkCollector := colly.NewCollector(
@@ -18,25 +23,32 @@ func ScrapeBruneida() []model.Job {
 	)
 	jobCollector := linkCollector.Clone()
 
-	jobs := []model.Job{}
-	links := []string{}
-	jobIds := []string{}
+	jobMap := map[string]model.Job{}
 
 	// Scraping the links
 	linkCollector.OnHTML("ul.list-az.ul-azs", func(e *colly.HTMLElement) {
-		e.ForEach(".az-detail>h3.az-title>a.h-elips", func(i int, child *colly.HTMLElement) {
+		e.ForEachWithBreak(".az-detail>h3.az-title>a.h-elips", func(i int, child *colly.HTMLElement) bool {
 			link := child.Attr("href")
 
-			jobCollector.Visit(link)
-			links = append(links, link)
+			jobId, err := getBruneidaJobId(link)
 
-			jobId := getBruneidaJobId(link)
-			jobIds = append(jobIds, jobId)
+			// This will continue the loop
+			if err != nil {
+				return true
+			}
+
+			job := model.Job{Provider: bruneidaProvider, JobId: jobId}
+			jobMap[jobId] = job
+
+			jobCollector.Visit(link)
+
+			return true
 		})
 	})
 
 	// Scraping the jobs
 	jobCollector.OnHTML("body", func(h *colly.HTMLElement) {
+
 		jobTitle := h.ChildText("#title-box-inner div.inline-block.pull-left h1")
 		company := h.ChildText("#ad-contact ul li:first-child span.bb b.small")
 		salary := h.ChildText("#ad-body-inner .opt .opt-dl:nth-child(3) .dd")
@@ -53,15 +65,26 @@ func ScrapeBruneida() []model.Job {
 
 		location := strings.Join(locations, " ")
 
-		job := model.Job{
-			Title:       jobTitle,
-			Company:     company,
-			Salary:      salary,
-			Location:    location,
-			Description: description,
+		link := h.Request.URL.String()
+
+		jobId, err := getBruneidaJobId(link)
+
+		if err == nil {
+			job := jobMap[jobId]
+
+			newJob := model.Job{
+				JobId:       job.JobId,
+				Provider:    job.Provider,
+				Title:       jobTitle,
+				Company:     company,
+				Salary:      salary,
+				Location:    location,
+				Description: description,
+			}
+
+			jobMap[jobId] = newJob
 		}
 
-		jobs = append(jobs, job)
 	})
 
 	collectors := []*colly.Collector{linkCollector, jobCollector}
@@ -76,17 +99,23 @@ func ScrapeBruneida() []model.Job {
 		linkCollector.Visit(url)
 	}
 
-	// Adding links to the existing jobs slice
-	for i := range jobs {
-		jobs[i].Link = links[i]
-		jobs[i].JobId = jobIds[i]
-	}
+	jobs := ConvertJobMapToJobSlice(jobMap)
 
 	return jobs
 
 }
 
-func getBruneidaJobId(s string) string {
+func getBruneidaJobId(s string) (string, error) {
 	r := regexp.MustCompile(`-(?P<jobId>\d+)`)
-	return fmt.Sprintf("bruneida-%s", r.FindStringSubmatch(s)[1])
+	matches := r.FindStringSubmatch(s)
+
+	if len(matches) < 1 {
+		return "", errors.New("no job id found")
+	}
+
+	if matches[1] == "" {
+		return "", errors.New("no job id found")
+	}
+
+	return matches[1], nil
 }
