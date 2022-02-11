@@ -1,14 +1,12 @@
 package main
 
 import (
-	"io"
 	"os"
-	"time"
 
 	"github.com/b-open/jobbuzz/internal/config"
 	"github.com/b-open/jobbuzz/pkg/controller"
+	"github.com/b-open/jobbuzz/pkg/middleware"
 	"github.com/b-open/jobbuzz/pkg/service"
-	"github.com/gin-contrib/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-isatty"
 	"github.com/rs/zerolog"
