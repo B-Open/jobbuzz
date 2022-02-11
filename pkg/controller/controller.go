@@ -6,7 +6,7 @@ import (
 )
 
 type Controller struct {
-	Service *service.Service
+	Service service.Servicer
 }
 
 func (controller *Controller) GetJobs(c *gin.Context) {
