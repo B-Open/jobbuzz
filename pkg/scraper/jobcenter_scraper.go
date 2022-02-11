@@ -4,112 +4,88 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"sync"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/internal/util"
 	"github.com/b-open/jobbuzz/pkg/model"
-	"github.com/gocolly/colly"
 )
 
 const (
 	pageSize = 30
+
+	jobcenterUrl = "https://www.jobcentrebrunei.gov.bn"
 )
 
-func ScrapeJobcenter() []model.Job {
+func ScrapeJobcenter() ([]model.Job, error) {
 
-	jobMap := map[string]model.Job{}
-	var wg sync.WaitGroup
+	jobs := []model.Job{}
 
-	linksCollector := colly.NewCollector(
-		colly.AllowedDomains("www.jobcentrebrunei.gov.bn"),
-		colly.Async(true),
-	)
+	url := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d", jobcenterUrl, pageSize)
 
-	linksCollector.Limit(&colly.LimitRule{DomainGlob: "*", Parallelism: 10})
+	doc, err := getDocument(url)
 
-	jobsCollector := linksCollector.Clone()
+	if err != nil {
+		return nil, err
+	}
 
-	linksCollector.OnHTML("body", func(e *colly.HTMLElement) {
-		e.ForEachWithBreak("li.list-group-item.list-group-item-flex", func(i int, h *colly.HTMLElement) bool {
-			jobTitle := h.ChildText(".jp_job_post_right_cont h4 a")
-			company := h.ChildText(".jp_job_post_right_cont p a")
-			salary := h.ChildText(".jp_job_post_right_cont>ul li:first-child")
-			location := h.ChildText(".jp_job_post_right_cont>ul li:nth-child(2)")
-			link := h.ChildAttr(".jp_job_post_right_cont h4 a", "href")
+	doc.Find("li.list-group-item.list-group-item-flex").EachWithBreak(func(i int, s *goquery.Selection) bool {
+		jobTitle := s.Find(".jp_job_post_right_cont h4 a").Text()
+		company := s.Find(".jp_job_post_right_cont p a").Text()
+		salary := s.Find(".jp_job_post_right_cont>ul li:first-child").Text()
+		location := s.Find(".jp_job_post_right_cont>ul li:nth-child(2)").Text()
+		link, exist := s.Find(".jp_job_post_right_cont h4 a").Attr("href")
 
-			jobId, err := getJobcenterJobId(link)
-
-			// This will continue the loop
-			if err != nil {
-				return true
-			}
-
-			job := model.Job{
-				Provider: JobCenter,
-				JobId:    jobId,
-				Title:    jobTitle,
-				Company:  company,
-				Salary:   salary,
-				Location: location,
-				Link:     link,
-			}
-
-			jobUrl := fmt.Sprintf("https://www.jobcentrebrunei.gov.bn%s", link)
-
-			if err := jobsCollector.Visit(jobUrl); err != nil {
-				fmt.Println(jobUrl)
-				fmt.Println("Error: ", err)
-
-				return true
-			}
-
-			jobMap[jobId] = job
-
-			wg.Add(1)
+		if !exist {
 			return true
-		})
+		}
 
-		jobsCollector.Wait()
-	})
-
-	jobsCollector.OnHTML("body", func(h *colly.HTMLElement) {
-		link := h.Request.URL.String()
 		jobId, err := getJobcenterJobId(link)
 
-		if err == nil {
-			description := h.ChildText(".container .row .col-lg-8.col-md-12.col-sm-12.col-12")
-
-			// TODO: Use HTML Minifier and whitelist
-			description = util.StandardizeSpaces(description)
-
-			job := jobMap[jobId]
-			job.Description = description
-			jobMap[jobId] = job
+		if err != nil {
+			return true
 		}
 
+		description, err := scrapeJobDescription(link)
+
+		if err != nil {
+			return true
+		}
+
+		job := model.Job{
+			Provider:    JobCenter,
+			JobId:       jobId,
+			Title:       jobTitle,
+			Company:     company,
+			Salary:      salary,
+			Location:    location,
+			Link:        link,
+			Description: description,
+		}
+
+		jobs = append(jobs, job)
+
+		return true
 	})
 
-	collectors := []*colly.Collector{linksCollector, jobsCollector}
+	return jobs, nil
+}
 
-	HandleError(collectors)
+func scrapeJobDescription(jobUrl string) (string, error) {
 
-	HandleRequest(collectors)
+	url := fmt.Sprintf("%s%s", jobcenterUrl, jobUrl)
 
-	// Limit to two pages
-	for i := 1; i < 3; i++ {
+	doc, err := getDocument(url)
 
-		url := fmt.Sprintf("https://www.jobcentrebrunei.gov.bn/web/guest/search-job?q=&delta=%d&start=%d", pageSize, i)
-
-		if err := linksCollector.Visit(url); err != nil {
-			fmt.Println("Error: ", err)
-			break
-		}
+	if err != nil {
+		return "", err
 	}
-	linksCollector.Wait()
 
-	jobs := ConvertJobMapToJobSlice(jobMap)
+	description := doc.Find(".container .row .col-lg-8.col-md-12.col-sm-12.col-12").Text()
 
-	return jobs
+	// TODO: Use HTML Minifier and whitelist
+	description = util.StandardizeSpaces(description)
+
+	return description, nil
 }
 
 func getJobcenterJobId(s string) (string, error) {

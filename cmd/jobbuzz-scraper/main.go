@@ -1,53 +1,59 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
 
-	"github.com/b-open/jobbuzz/internal/config"
 	"github.com/b-open/jobbuzz/pkg/scraper"
-	"github.com/b-open/jobbuzz/pkg/service"
 )
 
 func main() {
 
-	configuration, err := config.LoadConfig("../../")
+	// configuration, err := config.LoadConfig("../../")
 
-	if err != nil {
-		log.Fatal("Fail to load db config", err)
-	}
+	// if err != nil {
+	// 	log.Fatal("Fail to load db config", err)
+	// }
 
-	db, err := configuration.GetDb()
+	// db, err := configuration.GetDb()
 
-	if err != nil {
-		log.Fatal("Fail to get db connection", err)
-	}
+	// if err != nil {
+	// 	log.Fatal("Fail to get db connection", err)
+	// }
 
-	service := service.Service{DB: db}
+	// service := service.Service{DB: db}
 
 	// Scrape JobCenter
 
-	fmt.Println("Fetching jobs from JobCenter")
-	jobs := scraper.ScrapeJobcenter()
+	// fmt.Println("Fetching jobs from JobCenter")
+	// jobs, _ := scraper.ScrapeJobcenter()
 
-	for _, job := range jobs {
-		_, err = service.CreateJob(&job)
+	// jsonJob, _ := json.Marshal(jobs)
 
-		if err != nil {
-			fmt.Println("Fail to create job")
-		}
-	}
+	// fmt.Println(string(jsonJob))
+
+	// for _, job := range jobs {
+	// 	_, err = service.CreateJob(&job)
+
+	// 	if err != nil {
+	// 		fmt.Println("Fail to create job")
+	// 	}
+	// }
 
 	// Scrape Bruneida
 
 	fmt.Println("Fetching jobs from Bruneida")
-	jobs = scraper.ScrapeBruneida()
+	jobs, _ := scraper.ScrapeBruneida()
 
-	for _, job := range jobs {
-		_, err = service.CreateJob(&job)
+	jsonJob, _ := json.Marshal(jobs)
 
-		if err != nil {
-			fmt.Println("Fail to create job")
-		}
-	}
+	fmt.Println(string(jsonJob))
+
+	// for _, job := range jobs {
+	// 	_, err = service.CreateJob(&job)
+
+	// 	if err != nil {
+	// 		fmt.Println("Fail to create job")
+	// 	}
+	// }
 }

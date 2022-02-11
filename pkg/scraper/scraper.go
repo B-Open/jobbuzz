@@ -1,10 +1,12 @@
 package scraper
 
 import (
+	"errors"
 	"fmt"
+	"log"
+	"net/http"
 
-	"github.com/b-open/jobbuzz/pkg/model"
-	"github.com/gocolly/colly"
+	"github.com/PuerkitoBio/goquery"
 )
 
 const (
@@ -12,27 +14,30 @@ const (
 	Bruneida  = 2
 )
 
-func HandleError(collectors []*colly.Collector) {
-	for _, collector := range collectors {
-		collector.OnError(func(r *colly.Response, err error) {
-			fmt.Println("Request URL:", r.Request.URL, "failed with response:", r, "\nError:", err)
-		})
-	}
-}
+func getDocument(url string) (*goquery.Document, error) {
+	res, err := http.Get(url)
 
-func HandleRequest(collectors []*colly.Collector) {
-	for _, collector := range collectors {
-		collector.OnRequest(func(r *colly.Request) {
-			fmt.Println("Visiting", r.URL.String())
-		})
-	}
-}
+	if err != nil {
+		log.Fatal(err)
 
-func ConvertJobMapToJobSlice(jobMap map[string]model.Job) []model.Job {
-	jobs := []model.Job{}
-	for _, job := range jobMap {
-		jobs = append(jobs, job)
+		return nil, err
 	}
 
-	return jobs
+	defer res.Body.Close()
+
+	if res.StatusCode != 200 {
+		errorMessage := fmt.Sprintf("status code error: %d %s", res.StatusCode, res.Status)
+
+		log.Fatal(errorMessage)
+
+		return nil, errors.New(errorMessage)
+	}
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return doc, nil
 }

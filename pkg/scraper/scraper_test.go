@@ -1,6 +1,8 @@
 package scraper
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestGetJobcenterJobId(t *testing.T) {
 	jobId, _ := getJobcenterJobId("/web/guest/view-job/-/jobs/82563731/security-guard")
@@ -17,4 +19,15 @@ func TestGetBruneidaJobId(t *testing.T) {
 	if jobId != "106679" {
 		t.Errorf("Expected %s but got %s", "expected", "got")
 	}
+}
+
+func TestGetDocument(t *testing.T) {
+	url := "https://www.jobcentrebrunei.gov.bn/"
+
+	_, err := getDocument(url)
+
+	if err != nil {
+		t.Error(err)
+	}
+
 }
