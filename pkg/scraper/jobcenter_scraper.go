@@ -12,8 +12,7 @@ import (
 )
 
 const (
-	pageSize          = 30
-	jobcenterProvider = "jobcenter"
+	pageSize = 30
 )
 
 func ScrapeJobcenter() []model.Job {
@@ -46,7 +45,7 @@ func ScrapeJobcenter() []model.Job {
 			}
 
 			job := model.Job{
-				Provider: jobcenterProvider,
+				Provider: JobCenter,
 				JobId:    jobId,
 				Title:    jobTitle,
 				Company:  company,

@@ -41,7 +41,7 @@ func ScrapeBruneida() []model.Job {
 				return true
 			}
 
-			job := model.Job{Provider: bruneidaProvider, JobId: jobId}
+			job := model.Job{Provider: Bruneida, JobId: jobId}
 			jobMap[jobId] = job
 
 			jobCollector.Visit(link)

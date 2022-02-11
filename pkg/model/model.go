@@ -15,7 +15,7 @@ type BaseModel struct {
 
 type Job struct {
 	BaseModel
-	Provider    string `json:"provider"`
+	Provider    int    `json:"provider"`
 	JobId       string `json:"jobId"`
 	Title       string `json:"title"`
 	Company     string `json:"company"`

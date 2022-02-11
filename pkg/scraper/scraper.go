@@ -7,6 +7,11 @@ import (
 	"github.com/gocolly/colly"
 )
 
+const (
+	JobCenter = 1
+	Bruneida  = 2
+)
+
 func HandleError(collectors []*colly.Collector) {
 	for _, collector := range collectors {
 		collector.OnError(func(r *colly.Response, err error) {
