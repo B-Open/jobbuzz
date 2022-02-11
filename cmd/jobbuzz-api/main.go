@@ -26,6 +26,8 @@ func main() {
 	controller := controller.Controller{Service: &service}
 
 	r := gin.Default()
-	r.GET("/api/jobs", controller.GetJobs)
+
+	apiV1 := r.Group("/api/v1")
+	apiV1.GET("/job", controller.GetJobs)
 	r.Run()
 }

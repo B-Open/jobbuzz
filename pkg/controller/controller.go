@@ -9,12 +9,6 @@ type Controller struct {
 	Service *service.Service
 }
 
-func Ping(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "pong",
-	})
-}
-
 func (controller *Controller) GetJobs(c *gin.Context) {
 	jobs, err := controller.Service.GetJobs()
 
