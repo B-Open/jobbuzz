@@ -20,7 +20,11 @@ func ScrapeBruneida() []model.Job {
 	allowedDomain := colly.AllowedDomains("www.bruneida.com")
 	linkCollector := colly.NewCollector(
 		allowedDomain,
+		colly.Async(true),
 	)
+
+	linkCollector.Limit(&colly.LimitRule{DomainGlob: "*", Parallelism: 10})
+
 	jobCollector := linkCollector.Clone()
 
 	jobMap := map[string]model.Job{}
@@ -44,6 +48,7 @@ func ScrapeBruneida() []model.Job {
 
 			return true
 		})
+		jobCollector.Wait()
 	})
 
 	// Scraping the jobs
@@ -98,6 +103,7 @@ func ScrapeBruneida() []model.Job {
 		url := fmt.Sprintf("https://www.bruneida.com/brunei/jobs/?&page=%s", strconv.Itoa(i))
 		linkCollector.Visit(url)
 	}
+	linkCollector.Wait()
 
 	jobs := ConvertJobMapToJobSlice(jobMap)
 

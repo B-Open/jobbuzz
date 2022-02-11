@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"sync"
 
 	"github.com/b-open/jobbuzz/internal/util"
 	"github.com/b-open/jobbuzz/pkg/model"
@@ -18,10 +19,14 @@ const (
 func ScrapeJobcenter() []model.Job {
 
 	jobMap := map[string]model.Job{}
+	var wg sync.WaitGroup
 
 	linksCollector := colly.NewCollector(
 		colly.AllowedDomains("www.jobcentrebrunei.gov.bn"),
+		colly.Async(true),
 	)
+
+	linksCollector.Limit(&colly.LimitRule{DomainGlob: "*", Parallelism: 10})
 
 	jobsCollector := linksCollector.Clone()
 
@@ -61,9 +66,11 @@ func ScrapeJobcenter() []model.Job {
 
 			jobMap[jobId] = job
 
+			wg.Add(1)
 			return true
 		})
 
+		jobsCollector.Wait()
 	})
 
 	jobsCollector.OnHTML("body", func(h *colly.HTMLElement) {
@@ -98,6 +105,7 @@ func ScrapeJobcenter() []model.Job {
 			break
 		}
 	}
+	linksCollector.Wait()
 
 	jobs := ConvertJobMapToJobSlice(jobMap)
 
