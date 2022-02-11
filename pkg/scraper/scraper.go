@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/avast/retry-go"
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/html"
 )
@@ -17,25 +18,33 @@ const (
 )
 
 func getDocument(url string) (*goquery.Document, error) {
-	res, err := http.Get(url)
+	var doc *goquery.Document
 
-	if err != nil {
-		log.Fatal(err)
+	err := retry.Do(func() error {
+		res, err := http.Get(url)
 
-		return nil, err
-	}
+		if err != nil {
+			return err
+		}
 
-	defer res.Body.Close()
+		defer res.Body.Close()
 
-	if res.StatusCode != 200 {
-		errorMessage := fmt.Sprintf("status code error: %d %s", res.StatusCode, res.Status)
+		if res.StatusCode != 200 {
+			errorMessage := fmt.Sprintf("status code error: %d %s", res.StatusCode, res.Status)
 
-		log.Fatal(errorMessage)
+			log.Fatal(errorMessage)
 
-		return nil, errors.New(errorMessage)
-	}
+			return errors.New(errorMessage)
+		}
 
-	doc, err := goquery.NewDocumentFromReader(res.Body)
+		doc, err = goquery.NewDocumentFromReader(res.Body)
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 
 	if err != nil {
 		return nil, err
