@@ -7,8 +7,8 @@ import (
 
 	"github.com/b-open/jobbuzz/pkg/model"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/assert/v2"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/assert"
 )
 
 type MockService struct {
