@@ -57,6 +57,8 @@ func ScrapeBruneida() []model.Job {
 		jobTitle := h.ChildText("#title-box-inner div.inline-block.pull-left h1")
 		company := h.ChildText("#ad-contact ul li:first-child span.bb b.small")
 		salary := h.ChildText("#ad-body-inner .opt .opt-dl:nth-child(3) .dd")
+
+		// TODO: Use HTML Minifier and whitelist
 		description := util.StandardizeSpaces(h.ChildText("#full-description"))
 
 		locations := []string{}

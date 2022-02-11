@@ -31,17 +31,12 @@ func main() {
 	jobs := scraper.ScrapeJobcenter()
 
 	for _, job := range jobs {
-		service.CreateJob(&job)
+		_, err = service.CreateJob(&job)
+
+		if err != nil {
+			fmt.Println("Fail to create job")
+		}
 	}
-
-	// _, err := json.Marshal(jobs)
-
-	// if err != nil {
-	// 	fmt.Println("Error json marshal", err)
-	// }
-
-	// fmt.Println("Printing jobs from JobCenter")
-	// fmt.Println(string(json_jobs))
 
 	// Scrape Bruneida
 
@@ -49,15 +44,10 @@ func main() {
 	jobs = scraper.ScrapeBruneida()
 
 	for _, job := range jobs {
-		service.CreateJob(&job)
+		_, err = service.CreateJob(&job)
+
+		if err != nil {
+			fmt.Println("Fail to create job")
+		}
 	}
-
-	// json_jobs, err = json.Marshal(jobs)
-
-	// if err != nil {
-	// 	fmt.Println("Error json marshal", err)
-	// }
-
-	// fmt.Println("Printing jobs from Bruneida")
-	// fmt.Println(string(json_jobs))
 }

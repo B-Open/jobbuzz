@@ -80,6 +80,7 @@ func ScrapeJobcenter() []model.Job {
 		if err == nil {
 			description := h.ChildText(".container .row .col-lg-8.col-md-12.col-sm-12.col-12")
 
+			// TODO: Use HTML Minifier and whitelist
 			description = util.StandardizeSpaces(description)
 
 			job := jobMap[jobId]
