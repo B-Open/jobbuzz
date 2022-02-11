@@ -22,7 +22,7 @@ func TestGetBruneidaJobId(t *testing.T) {
 }
 
 func TestGetDocument(t *testing.T) {
-	url := "https://www.jobcentrebrunei.gov.bn/"
+	url := "https://github.com"
 
 	_, err := getDocument(url)
 
