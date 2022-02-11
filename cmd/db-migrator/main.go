@@ -1,11 +1,21 @@
 package main
 
 import (
+	"os"
+
 	"github.com/b-open/jobbuzz/internal/config"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 func main() {
+	log.Logger = log.Output(
+		zerolog.ConsoleWriter{
+			Out:     os.Stderr,
+			NoColor: false,
+		},
+	)
+
 	configuration, err := config.LoadConfig("../../")
 	if err != nil {
 		log.Fatal().Err(err).Msg("Fail to load db config")

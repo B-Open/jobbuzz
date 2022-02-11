@@ -3,6 +3,7 @@ module github.com/b-open/jobbuzz
 go 1.17
 
 require (
+	github.com/gin-contrib/logger v0.2.1
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gocolly/colly v1.2.0
