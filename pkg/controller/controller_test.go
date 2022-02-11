@@ -33,4 +33,24 @@ func TestGetJobs(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 	})
+
+	t.Run("return 1 job", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+
+		service := MockService{}
+		service.On("GetJobs").Return([]model.Job{
+			{
+				BaseModel: model.BaseModel{
+					ID: 1,
+				},
+				Title: "test job",
+			},
+		}, nil)
+
+		controller := Controller{Service: &service}
+		controller.GetJobs(c)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
 }
