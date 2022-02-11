@@ -7,6 +7,8 @@ import (
 	"net/http"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/tdewolff/minify/v2"
+	"github.com/tdewolff/minify/v2/html"
 )
 
 const (
@@ -40,4 +42,26 @@ func getDocument(url string) (*goquery.Document, error) {
 	}
 
 	return doc, nil
+}
+
+func minifyHtml(s string) (*string, error) {
+
+	m := minify.New()
+	m.Add("text/html", &html.Minifier{
+		KeepComments:            false,
+		KeepWhitespace:          false,
+		KeepDocumentTags:        false,
+		KeepQuotes:              true,
+		KeepEndTags:             false,
+		KeepConditionalComments: false,
+		KeepDefaultAttrVals:     false,
+	})
+
+	minified, err := m.String("text/html", s)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &minified, nil
 }

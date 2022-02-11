@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/b-open/jobbuzz/internal/util"
 	"github.com/b-open/jobbuzz/pkg/model"
 )
 
@@ -49,7 +48,11 @@ func scrapeBruneidaJob(url string) (*model.Job, error) {
 	company := doc.Find("#ad-contact ul li:first-child span.bb b.small").Text()
 	salary := doc.Find("#ad-body-inner .opt .opt-dl:nth-child(3) .dd").Text()
 
-	description := util.StandardizeSpaces(doc.Find("#full-description").Text())
+	description, err := minifyHtml(doc.Find("#full-description").Text())
+
+	if err != nil {
+		return nil, err
+	}
 
 	locations := []string{}
 	doc.Find("#ad-body-inner .opt .opt-dl").EachWithBreak(func(i int, s *goquery.Selection) bool {
@@ -77,7 +80,7 @@ func scrapeBruneidaJob(url string) (*model.Job, error) {
 		Company:     company,
 		Salary:      salary,
 		Location:    location,
-		Description: description,
+		Description: *description,
 	}
 
 	return &job, nil

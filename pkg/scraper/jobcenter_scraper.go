@@ -6,7 +6,6 @@ import (
 	"regexp"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/b-open/jobbuzz/internal/util"
 	"github.com/b-open/jobbuzz/pkg/model"
 )
 
@@ -59,7 +58,7 @@ func ScrapeJobcenter() ([]model.Job, error) {
 			Salary:      salary,
 			Location:    location,
 			Link:        link,
-			Description: description,
+			Description: *description,
 		}
 
 		jobs = append(jobs, job)
@@ -70,22 +69,26 @@ func ScrapeJobcenter() ([]model.Job, error) {
 	return jobs, nil
 }
 
-func scrapeJobDescription(jobUrl string) (string, error) {
+func scrapeJobDescription(jobUrl string) (*string, error) {
 
 	url := fmt.Sprintf("%s%s", jobcenterUrl, jobUrl)
 
 	doc, err := getDocument(url)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	description := doc.Find(".container .row .col-lg-8.col-md-12.col-sm-12.col-12").Text()
 
 	// TODO: Use HTML Minifier and whitelist
-	description = util.StandardizeSpaces(description)
+	minifiedDescription, err := minifyHtml(description)
 
-	return description, nil
+	if err != nil {
+		return nil, err
+	}
+
+	return minifiedDescription, nil
 }
 
 func getJobcenterJobId(s string) (string, error) {
