@@ -10,8 +10,8 @@ import (
 	"github.com/b-open/jobbuzz/pkg/model"
 )
 
-func ScrapeBruneida() ([]model.Job, error) {
-	jobs := []model.Job{}
+func ScrapeBruneida() ([]*model.Job, error) {
+	jobs := []*model.Job{}
 
 	for i := 1; i < 2; i++ {
 		url := fmt.Sprintf("https://www.bruneida.com/brunei/jobs/?&page=%d", i)
@@ -26,10 +26,11 @@ func ScrapeBruneida() ([]model.Job, error) {
 			job, err := scrapeBruneidaJob(link)
 
 			if err != nil {
+				fmt.Printf("Fail to scrape job for link : %s, err: %s \n", link, err)
 				continue
 			}
 
-			jobs = append(jobs, *job)
+			jobs = append(jobs, job)
 		}
 	}
 
