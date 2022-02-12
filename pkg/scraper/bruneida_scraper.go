@@ -11,13 +11,13 @@ import (
 )
 
 func ScrapeBruneida() ([]*model.Job, error) {
+
 	jobs := []*model.Job{}
 
 	for i := 1; i < 2; i++ {
 		url := fmt.Sprintf("https://www.bruneida.com/brunei/jobs/?&page=%d", i)
 
 		links, err := getJobLinks(url)
-
 		if err != nil {
 			return nil, err
 		}
@@ -40,7 +40,6 @@ func ScrapeBruneida() ([]*model.Job, error) {
 func scrapeBruneidaJob(url string) (*model.Job, error) {
 
 	doc, err := getDocument(url)
-
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +49,6 @@ func scrapeBruneidaJob(url string) (*model.Job, error) {
 	salary := doc.Find("#ad-body-inner .opt .opt-dl:nth-child(3) .dd").Text()
 
 	description, err := minifyHtml(doc.Find("#full-description").Text())
-
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +67,6 @@ func scrapeBruneidaJob(url string) (*model.Job, error) {
 	location := strings.Join(locations, " ")
 
 	jobId, err := getBruneidaJobId(url)
-
 	if err != nil {
 		return nil, err
 	}
@@ -89,9 +86,10 @@ func scrapeBruneidaJob(url string) (*model.Job, error) {
 }
 
 func getJobLinks(url string) ([]string, error) {
-	links := []string{}
-	doc, err := getDocument(url)
 
+	links := []string{}
+
+	doc, err := getDocument(url)
 	if err != nil {
 		return nil, err
 	}

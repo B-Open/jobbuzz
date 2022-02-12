@@ -21,8 +21,8 @@ func getDocument(url string) (*goquery.Document, error) {
 	var doc *goquery.Document
 
 	err := retry.Do(func() error {
-		res, err := http.Get(url)
 
+		res, err := http.Get(url)
 		if err != nil {
 			return err
 		}
@@ -38,7 +38,6 @@ func getDocument(url string) (*goquery.Document, error) {
 		}
 
 		doc, err = goquery.NewDocumentFromReader(res.Body)
-
 		if err != nil {
 			return err
 		}
@@ -67,7 +66,6 @@ func minifyHtml(s string) (*string, error) {
 	})
 
 	minified, err := m.String("text/html", s)
-
 	if err != nil {
 		return nil, err
 	}
