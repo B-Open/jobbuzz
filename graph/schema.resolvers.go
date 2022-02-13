@@ -9,6 +9,8 @@ import (
 
 	"github.com/b-open/jobbuzz/graph/generated"
 	"github.com/b-open/jobbuzz/graph/model"
+	"github.com/jinzhu/copier"
+	werrors "github.com/pkg/errors"
 )
 
 func (r *mutationResolver) CreateJob(ctx context.Context, input model.NewJob) (*model.Job, error) {
@@ -16,7 +18,18 @@ func (r *mutationResolver) CreateJob(ctx context.Context, input model.NewJob) (*
 }
 
 func (r *queryResolver) Jobs(ctx context.Context) ([]*model.Job, error) {
-	panic(fmt.Errorf("not implemented"))
+	jobs, err := r.Service.GetJobs()
+	if err != nil {
+		return nil, werrors.Wrapf(err, "Error in GetJobs")
+	}
+
+	var graphqlJobs []*model.Job
+	err = copier.Copy(&graphqlJobs, &jobs)
+	if err != nil {
+		return nil, werrors.Wrapf(err, "Error copying structs")
+	}
+
+	return graphqlJobs, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

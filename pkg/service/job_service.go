@@ -4,8 +4,8 @@ import (
 	"github.com/b-open/jobbuzz/pkg/model"
 )
 
-func (s *Service) GetJobs() ([]model.Job, error) {
-	var jobs []model.Job
+func (s *Service) GetJobs() ([]*model.Job, error) {
+	var jobs []*model.Job
 
 	results := s.DB.Find(&jobs)
 

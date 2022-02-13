@@ -9,6 +9,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/b-open/jobbuzz/graph"
 	"github.com/b-open/jobbuzz/graph/generated"
+	"github.com/b-open/jobbuzz/internal/config"
+	"github.com/b-open/jobbuzz/pkg/service"
 )
 
 const defaultPort = "8080"
@@ -19,7 +21,18 @@ func main() {
 		port = defaultPort
 	}
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	configuration, err := config.LoadConfig(".")
+	if err != nil {
+		log.Fatal("Fail to load db config", err)
+	}
+
+	db, err := configuration.GetDb()
+	if err != nil {
+		log.Fatal("Fail to get db connection", err)
+	}
+
+	service := service.Service{DB: db}
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{Service: &service}}))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)

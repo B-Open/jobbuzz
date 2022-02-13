@@ -6,6 +6,8 @@ require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gocolly/colly v1.2.0
+	github.com/jinzhu/copier v0.3.5
+	github.com/pkg/errors v0.8.1
 	github.com/spf13/viper v1.10.1
 	github.com/vektah/gqlparser/v2 v2.2.0
 	gorm.io/driver/mysql v1.2.3

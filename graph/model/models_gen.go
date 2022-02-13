@@ -3,7 +3,7 @@
 package model
 
 type Job struct {
-	ID    string `json:"id"`
+	ID    int    `json:"id"`
 	Title string `json:"title"`
 }
 

@@ -16,9 +16,9 @@ type MockService struct {
 	mock.Mock
 }
 
-func (s *MockService) GetJobs() ([]model.Job, error) {
+func (s *MockService) GetJobs() ([]*model.Job, error) {
 	args := s.Called()
-	return args.Get(0).([]model.Job), args.Error(1)
+	return args.Get(0).([]*model.Job), args.Error(1)
 }
 
 func TestGetJobs(t *testing.T) {
