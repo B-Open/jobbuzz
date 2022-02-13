@@ -13,7 +13,7 @@ import (
 	werrors "github.com/pkg/errors"
 )
 
-func (r *mutationResolver) CreateJob(ctx context.Context, input model.NewJob) (*model.Job, error) {
+func (r *mutationResolver) RegisterAccount(ctx context.Context, input model.NewUser) (*model.User, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

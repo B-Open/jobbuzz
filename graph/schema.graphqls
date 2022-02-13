@@ -2,14 +2,24 @@
 #
 # https://gqlgen.com/getting-started/
 
-input NewJob {
-  text: String!
-  userId: String!
+input NewUser {
+  email: String!
+  password: String!
+}
+
+type User {
+  id: Int!
+  email: String!
 }
 
 type Job {
   id: Int!
+  createdAt: String!
+  updatedAt: String!
   title: String!
+  company: String!
+  salary: String!
+  location: String!
 }
 
 type Query {
@@ -17,5 +27,5 @@ type Query {
 }
 
 type Mutation {
-  createJob(input: NewJob!): Job!
+  registerAccount(input: NewUser!): User!
 }
