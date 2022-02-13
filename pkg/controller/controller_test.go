@@ -27,7 +27,7 @@ func TestGetJobs(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 
 		service := MockService{}
-		service.On("GetJobs").Return([]model.Job{}, nil)
+		service.On("GetJobs").Return([]*model.Job{}, nil)
 
 		controller := Controller{Service: &service}
 		controller.GetJobs(c)
@@ -40,7 +40,7 @@ func TestGetJobs(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 
 		service := MockService{}
-		service.On("GetJobs").Return([]model.Job{
+		service.On("GetJobs").Return([]*model.Job{
 			{
 				BaseModel: model.BaseModel{
 					ID: 1,
@@ -60,7 +60,7 @@ func TestGetJobs(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 
 		service := MockService{}
-		service.On("GetJobs").Return([]model.Job{}, errors.New("service error"))
+		service.On("GetJobs").Return([]*model.Job{}, errors.New("service error"))
 
 		controller := Controller{Service: &service}
 

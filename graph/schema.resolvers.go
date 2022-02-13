@@ -23,6 +23,7 @@ func (r *queryResolver) Jobs(ctx context.Context) ([]*model.Job, error) {
 		return nil, werrors.Wrapf(err, "Error in GetJobs")
 	}
 
+	// TODO: fix datetime not working
 	var graphqlJobs []*model.Job
 	err = copier.Copy(&graphqlJobs, &jobs)
 	if err != nil {
