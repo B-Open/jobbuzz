@@ -1,31 +1,51 @@
 package main
 
 import (
-	"log"
+	"os"
 
 	"github.com/b-open/jobbuzz/internal/config"
 	"github.com/b-open/jobbuzz/pkg/controller"
+	"github.com/b-open/jobbuzz/pkg/middleware"
 	"github.com/b-open/jobbuzz/pkg/service"
 	"github.com/gin-gonic/gin"
+	"github.com/mattn/go-isatty"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
-	configuration, err := config.LoadConfig("../../")
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if gin.IsDebugging() {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
 
+	isTerm := isatty.IsTerminal(os.Stdout.Fd())
+	if isTerm {
+		log.Logger = log.Output(
+			zerolog.ConsoleWriter{
+				Out:     os.Stderr,
+				NoColor: false,
+			},
+		)
+	}
+
+	configuration, err := config.LoadConfig("../../")
 	if err != nil {
-		log.Fatal("Fail to load db config", err)
+		log.Fatal().Err(err).Msg("Fail to load db config")
 	}
 
 	db, err := configuration.GetDb()
-
 	if err != nil {
-		log.Fatal("Fail to get db connection", err)
+		log.Fatal().Err(err).Msg("Fail to get db connection")
 	}
 
 	service := service.Service{DB: db}
 	controller := controller.Controller{Service: &service}
 
-	r := gin.Default()
+	r := gin.New()
+
+	r.Use(middleware.SetLogger(isTerm))
+	r.Use(gin.Recovery())
 
 	apiV1 := r.Group("/api/v1")
 	apiV1.GET("/job", controller.GetJobs)
