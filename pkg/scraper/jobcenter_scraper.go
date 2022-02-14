@@ -38,7 +38,7 @@ func ScrapeJobcenter() ([]*model.Job, error) {
 			return true
 		}
 
-		jobId, err := getJobcenterJobId(link)
+		providerJobId, err := getJobcenterJobId(link)
 		if err != nil {
 			return true
 		}
@@ -49,14 +49,14 @@ func ScrapeJobcenter() ([]*model.Job, error) {
 		}
 
 		job := model.Job{
-			Provider:    JobCenter,
-			JobId:       jobId,
-			Title:       jobTitle,
-			Company:     company,
-			Salary:      salary,
-			Location:    location,
-			Link:        link,
-			Description: *description,
+			Provider:      JobCenter,
+			ProviderJobId: providerJobId,
+			Title:         jobTitle,
+			Company:       company,
+			Salary:        salary,
+			Location:      location,
+			Link:          link,
+			Description:   *description,
 		}
 
 		jobs = append(jobs, &job)
@@ -93,12 +93,12 @@ func getJobcenterJobId(s string) (string, error) {
 
 	matches := r.FindStringSubmatch(s)
 
-	if len(matches) < 1 {
-		return "", errors.New("no job id found")
+	if len(matches) < 2 {
+		return "", errors.New(fmt.Sprintf("job id is empty: %s", s))
 	}
 
 	if matches[1] == "" {
-		return "", errors.New("no job id found")
+		return "", errors.New(fmt.Sprintf("no job id found: %s", s))
 	}
 
 	return matches[1], nil

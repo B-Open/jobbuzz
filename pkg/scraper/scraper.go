@@ -3,7 +3,6 @@ package scraper
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/PuerkitoBio/goquery"
@@ -29,10 +28,10 @@ func getDocument(url string) (*goquery.Document, error) {
 
 		defer res.Body.Close()
 
-		if res.StatusCode != 200 {
+		if res.StatusCode != http.StatusOK {
 			errorMessage := fmt.Sprintf("status code error: %d %s", res.StatusCode, res.Status)
 
-			log.Fatal(errorMessage)
+			fmt.Println(errorMessage)
 
 			return errors.New(errorMessage)
 		}

@@ -66,19 +66,19 @@ func scrapeBruneidaJob(url string) (*model.Job, error) {
 
 	location := strings.Join(locations, " ")
 
-	jobId, err := getBruneidaJobId(url)
+	providerJobId, err := getBruneidaJobId(url)
 	if err != nil {
 		return nil, err
 	}
 
 	job := model.Job{
-		JobId:       jobId,
-		Provider:    Bruneida,
-		Title:       jobTitle,
-		Company:     company,
-		Salary:      salary,
-		Location:    location,
-		Description: *description,
+		ProviderJobId: providerJobId,
+		Provider:      Bruneida,
+		Title:         jobTitle,
+		Company:       company,
+		Salary:        salary,
+		Location:      location,
+		Description:   *description,
 	}
 
 	return &job, nil
