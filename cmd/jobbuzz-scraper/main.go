@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -26,35 +25,38 @@ func main() {
 
 	service := service.Service{DB: db}
 
+	// Scrape JobCenter
+
 	fmt.Println("Fetching jobs from JobCenter")
-	jobs := scraper.ScrapeJobcenter()
-
-	for _, job := range jobs {
-		service.CreateJob(&job)
-	}
-
-	json_jobs, err := json.Marshal(jobs)
+	jobs, err := scraper.ScrapeJobcenter()
 
 	if err != nil {
-		fmt.Println("Error json marshal", err)
+		fmt.Println("Fail to scrape jobs from jobcenter", err)
+	} else {
+		for _, job := range jobs {
+			_, err = service.CreateJob(job)
+
+			if err != nil {
+				fmt.Println("Fail to create job")
+			}
+		}
 	}
 
-	fmt.Println("Printing jobs from JobCenter")
-	fmt.Println(string(json_jobs))
+	// Scrape Bruneida
 
 	fmt.Println("Fetching jobs from Bruneida")
-	jobs = scraper.ScrapeBruneida()
-
-	for _, job := range jobs {
-		service.CreateJob(&job)
-	}
-
-	json_jobs, err = json.Marshal(jobs)
+	jobs, err = scraper.ScrapeBruneida()
 
 	if err != nil {
-		fmt.Println("Error json marshal", err)
+		fmt.Println("Fail to scrape jobs from Bruneida", err)
+	} else {
+		for _, job := range jobs {
+			_, err = service.CreateJob(job)
+
+			if err != nil {
+				fmt.Println("Fail to create job")
+			}
+		}
 	}
 
-	fmt.Println("Printing jobs from Bruneida")
-	fmt.Println(string(json_jobs))
 }

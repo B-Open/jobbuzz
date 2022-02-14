@@ -3,12 +3,15 @@ module github.com/b-open/jobbuzz
 go 1.17
 
 require (
+	github.com/PuerkitoBio/goquery v1.8.0
+	github.com/avast/retry-go v3.0.0+incompatible
+	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gin-contrib/logger v0.2.1
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/gocolly/colly v1.2.0
 	github.com/rs/zerolog v1.26.1
 	github.com/spf13/viper v1.10.1
+	github.com/tdewolff/minify/v2 v2.10.0
 	gorm.io/driver/mysql v1.2.3
 	gorm.io/gorm v1.22.5
 )
@@ -23,7 +26,6 @@ require (
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.10.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
-	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
@@ -43,10 +45,10 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.1.1 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
+	github.com/tdewolff/parse/v2 v2.5.27 // indirect
 	github.com/ugorji/go/codec v1.2.6 // indirect
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

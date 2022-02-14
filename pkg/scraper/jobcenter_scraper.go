@@ -1,53 +1,105 @@
 package scraper
 
 import (
+	"errors"
 	"fmt"
-	"strconv"
+	"regexp"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/pkg/model"
-	"github.com/gocolly/colly"
 )
 
-func ScrapeJobcenter() []model.Job {
-	jobs := []model.Job{}
+const (
+	pageSize = 30
 
-	c := colly.NewCollector(
-		colly.AllowedDomains("www.jobcentrebrunei.gov.bn"),
-	)
+	jobcenterUrl = "https://www.jobcentrebrunei.gov.bn"
+)
 
-	c.OnHTML("li.list-group-item.list-group-item-flex", func(e *colly.HTMLElement) {
-		job_title := e.ChildText(".jp_job_post_right_cont h4 a")
-		company := e.ChildText(".jp_job_post_right_cont p a")
-		salary := e.ChildText(".jp_job_post_right_cont>ul li:first-child")
-		location := e.ChildText(".jp_job_post_right_cont>ul li:nth-child(2)")
+func ScrapeJobcenter() ([]*model.Job, error) {
 
-		job := model.Job{
-			Title:    job_title,
-			Company:  company,
-			Salary:   salary,
-			Location: location,
-		}
+	jobs := []*model.Job{}
 
-		jobs = append(jobs, job)
+	url := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d", jobcenterUrl, pageSize)
 
-	})
-
-	collectors := []*colly.Collector{c}
-
-	HandleError(collectors)
-
-	HandleRequest(collectors)
-
-	// Limit to two pages
-	for i := 1; i < 3; i++ {
-
-		url := fmt.Sprintf("https://www.jobcentrebrunei.gov.bn/web/guest/search-job?q=&delta=200&start=%s", strconv.Itoa(i))
-
-		if err := c.Visit(url); err != nil {
-			fmt.Println("Error: ", err)
-			break
-		}
+	doc, err := getDocument(url)
+	if err != nil {
+		return nil, err
 	}
 
-	return jobs
+	doc.Find("li.list-group-item.list-group-item-flex").EachWithBreak(func(i int, s *goquery.Selection) bool {
+
+		jobTitle := s.Find(".jp_job_post_right_cont h4 a").Text()
+		company := s.Find(".jp_job_post_right_cont p a").Text()
+		salary := s.Find(".jp_job_post_right_cont>ul li:first-child").Text()
+		location := s.Find(".jp_job_post_right_cont>ul li:nth-child(2)").Text()
+
+		link, exist := s.Find(".jp_job_post_right_cont h4 a").Attr("href")
+		if !exist {
+			return true
+		}
+
+		providerJobId, err := getJobcenterJobId(link)
+		if err != nil {
+			return true
+		}
+
+		description, err := scrapeJobDescription(link)
+		if err != nil {
+			return true
+		}
+
+		job := model.Job{
+			Provider:      JobCenter,
+			ProviderJobId: providerJobId,
+			Title:         jobTitle,
+			Company:       company,
+			Salary:        salary,
+			Location:      location,
+			Link:          link,
+			Description:   *description,
+		}
+
+		jobs = append(jobs, &job)
+
+		return true
+	})
+
+	return jobs, nil
+}
+
+func scrapeJobDescription(jobUrl string) (*string, error) {
+
+	url := fmt.Sprintf("%s%s", jobcenterUrl, jobUrl)
+
+	doc, err := getDocument(url)
+	if err != nil {
+		return nil, err
+	}
+
+	description := doc.Find(".container .row .col-lg-8.col-md-12.col-sm-12.col-12").Text()
+
+	minifiedDescription, err := minifyHtml(description)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return minifiedDescription, nil
+}
+
+func getJobcenterJobId(s string) (string, error) {
+
+	r := regexp.MustCompile(`^\/web\/guest\/view-job\/-\/jobs\/(?P<jobId>\d+)\/.*$`)
+
+	matches := r.FindStringSubmatch(s)
+
+	if len(matches) < 2 {
+		return "", errors.New(fmt.Sprintf("job id is empty: %s", s))
+	}
+
+	if matches[1] == "" {
+		return "", errors.New(fmt.Sprintf("no job id found: %s", s))
+	}
+
+	return matches[1], nil
 }
