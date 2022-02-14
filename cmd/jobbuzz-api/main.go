@@ -47,7 +47,7 @@ func main() {
 	r.Use(middleware.SetLogger(isTerm))
 	r.Use(gin.Recovery())
 
-	r.GET("/api/jobs", controller.GetJobs)
-
+	apiV1 := r.Group("/api/v1")
+	apiV1.GET("/job", controller.GetJobs)
 	r.Run()
 }
