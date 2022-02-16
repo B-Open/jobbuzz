@@ -9,7 +9,7 @@ import (
 )
 
 type Controller struct {
-	Service *service.Service
+	Service service.Servicer
 }
 
 func Ping(c *gin.Context) {
