@@ -1,7 +1,6 @@
 package scraper
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 
@@ -10,59 +9,61 @@ import (
 )
 
 const (
-	pageSize = 30
+	pageSize = 200
 
 	jobcenterUrl = "https://www.jobcentrebrunei.gov.bn"
 )
 
 func ScrapeJobcenter() ([]*model.Job, error) {
-
 	jobs := []*model.Job{}
 
-	url := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d", jobcenterUrl, pageSize)
+	for i := 1; i < 20; i++ {
+		url := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d&start=%d", jobcenterUrl, pageSize, i)
 
-	doc, err := getDocument(url)
-	if err != nil {
-		return nil, err
+		doc, err := getDocument(url)
+		if err != nil {
+			return jobs, nil
+		}
+
+		doc.Find("li.list-group-item.list-group-item-flex").EachWithBreak(func(i int, s *goquery.Selection) bool {
+
+			jobTitle := s.Find(".jp_job_post_right_cont h4 a").Text()
+			company := s.Find(".jp_job_post_right_cont p a").Text()
+			salary := s.Find(".jp_job_post_right_cont>ul li:first-child").Text()
+			location := s.Find(".jp_job_post_right_cont>ul li:nth-child(2)").Text()
+
+			link, exist := s.Find(".jp_job_post_right_cont h4 a").Attr("href")
+			if !exist {
+				return true
+			}
+
+			providerJobId, err := getJobcenterJobId(link)
+			if err != nil {
+				return true
+			}
+
+			description, err := scrapeJobDescription(link)
+			if err != nil {
+				return true
+			}
+
+			job := model.Job{
+				Provider:      JobCenter,
+				ProviderJobId: providerJobId,
+				Title:         jobTitle,
+				Company:       company,
+				Salary:        salary,
+				Location:      location,
+				Link:          link,
+				Description:   *description,
+			}
+
+			jobs = append(jobs, &job)
+
+			return true
+		})
+		i++
 	}
-
-	doc.Find("li.list-group-item.list-group-item-flex").EachWithBreak(func(i int, s *goquery.Selection) bool {
-
-		jobTitle := s.Find(".jp_job_post_right_cont h4 a").Text()
-		company := s.Find(".jp_job_post_right_cont p a").Text()
-		salary := s.Find(".jp_job_post_right_cont>ul li:first-child").Text()
-		location := s.Find(".jp_job_post_right_cont>ul li:nth-child(2)").Text()
-
-		link, exist := s.Find(".jp_job_post_right_cont h4 a").Attr("href")
-		if !exist {
-			return true
-		}
-
-		providerJobId, err := getJobcenterJobId(link)
-		if err != nil {
-			return true
-		}
-
-		description, err := scrapeJobDescription(link)
-		if err != nil {
-			return true
-		}
-
-		job := model.Job{
-			Provider:      JobCenter,
-			ProviderJobId: providerJobId,
-			Title:         jobTitle,
-			Company:       company,
-			Salary:        salary,
-			Location:      location,
-			Link:          link,
-			Description:   *description,
-		}
-
-		jobs = append(jobs, &job)
-
-		return true
-	})
 
 	return jobs, nil
 }
@@ -94,11 +95,11 @@ func getJobcenterJobId(s string) (string, error) {
 	matches := r.FindStringSubmatch(s)
 
 	if len(matches) < 2 {
-		return "", errors.New(fmt.Sprintf("job id is empty: %s", s))
+		return "", fmt.Errorf("job id is empty: %s", s)
 	}
 
 	if matches[1] == "" {
-		return "", errors.New(fmt.Sprintf("no job id found: %s", s))
+		return "", fmt.Errorf("no job id found: %s", s)
 	}
 
 	return matches[1], nil

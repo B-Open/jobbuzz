@@ -14,12 +14,12 @@ func ScrapeBruneida() ([]*model.Job, error) {
 
 	jobs := []*model.Job{}
 
-	for i := 1; i < 2; i++ {
+	for i := 1; i < 20; i++ {
 		url := fmt.Sprintf("https://www.bruneida.com/brunei/jobs/?&page=%d", i)
 
 		links, err := getJobLinks(url)
 		if err != nil {
-			return nil, err
+			return jobs, nil
 		}
 
 		for _, link := range links {
@@ -32,6 +32,7 @@ func ScrapeBruneida() ([]*model.Job, error) {
 
 			jobs = append(jobs, job)
 		}
+		i++
 	}
 
 	return jobs, nil
