@@ -62,7 +62,6 @@ func ScrapeJobcenter() ([]*model.Job, error) {
 
 			return true
 		})
-		i++
 	}
 
 	return jobs, nil

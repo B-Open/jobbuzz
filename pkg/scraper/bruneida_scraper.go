@@ -32,7 +32,6 @@ func ScrapeBruneida() ([]*model.Job, error) {
 
 			jobs = append(jobs, job)
 		}
-		i++
 	}
 
 	return jobs, nil
