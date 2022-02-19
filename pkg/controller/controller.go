@@ -3,8 +3,8 @@ package controller
 import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/b-open/jobbuzz/graph"
-	"github.com/b-open/jobbuzz/graph/generated"
+	"github.com/b-open/jobbuzz/pkg/graph"
+	"github.com/b-open/jobbuzz/pkg/graph/generated"
 	"github.com/b-open/jobbuzz/pkg/service"
 	"github.com/gin-gonic/gin"
 )

@@ -7,24 +7,24 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/b-open/jobbuzz/graph/generated"
-	"github.com/b-open/jobbuzz/graph/model"
+	"github.com/b-open/jobbuzz/pkg/graph/generated"
+	"github.com/b-open/jobbuzz/pkg/graph/graphmodel"
 	"github.com/jinzhu/copier"
 	werrors "github.com/pkg/errors"
 )
 
-func (r *mutationResolver) RegisterAccount(ctx context.Context, input model.NewUser) (*model.User, error) {
+func (r *mutationResolver) RegisterAccount(ctx context.Context, input graphmodel.NewUser) (*graphmodel.User, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Jobs(ctx context.Context) ([]*model.Job, error) {
+func (r *queryResolver) Jobs(ctx context.Context) ([]*graphmodel.Job, error) {
 	jobs, err := r.Service.GetJobs()
 	if err != nil {
 		return nil, werrors.Wrapf(err, "Error in GetJobs")
 	}
 
 	// TODO: fix datetime not working
-	var graphqlJobs []*model.Job
+	var graphqlJobs []*graphmodel.Job
 	err = copier.Copy(&graphqlJobs, &jobs)
 	if err != nil {
 		return nil, werrors.Wrapf(err, "Error copying structs")
