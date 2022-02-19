@@ -1,73 +1,126 @@
 package scraper
 
 import (
+	"errors"
 	"fmt"
-	"strconv"
+	"regexp"
 	"strings"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/pkg/model"
-	"github.com/gocolly/colly"
 )
 
-func ScrapeBruneida() []model.Job {
-	allowedDomain := colly.AllowedDomains("www.bruneida.com")
-	linkCollector := colly.NewCollector(
-		allowedDomain,
-	)
-	jobCollector := linkCollector.Clone()
+func ScrapeBruneida() ([]*model.Job, error) {
 
-	jobs := []model.Job{}
+	jobs := []*model.Job{}
 
-	// Scraping the links
-	linkCollector.OnHTML("ul.list-az.ul-azs", func(e *colly.HTMLElement) {
-		e.ForEach(".az-detail>h3.az-title>a.h-elips", func(i int, child *colly.HTMLElement) {
-			link := child.Attr("href")
-			jobCollector.Visit(link)
+	for i := 1; i < 2; i++ {
+		url := fmt.Sprintf("https://www.bruneida.com/brunei/jobs/?&page=%d", i)
 
-		})
-	})
-
-	// Scraping the jobs
-	jobCollector.OnHTML("body", func(h *colly.HTMLElement) {
-		job_title := h.ChildText("#title-box-inner div.inline-block.pull-left h1")
-		company := h.ChildText("#ad-contact ul li:first-child span.bb b.small")
-		salary := h.ChildText("#ad-body-inner .opt .opt-dl:nth-child(3) .dd")
-
-		locations := []string{}
-		h.ForEach("#ad-body-inner .opt .opt-dl", func(i int, child *colly.HTMLElement) {
-			title := child.ChildText(".dt")
-
-			if strings.Contains(title, "City") || strings.Contains(title, "Local") {
-				locations = append(locations, child.ChildText(".dd"))
-			}
-		})
-
-		location := strings.Join(locations, " ")
-
-		job := model.Job{
-			Title:    job_title,
-			Company:  company,
-			Salary:   salary,
-			Location: location,
+		links, err := getJobLinks(url)
+		if err != nil {
+			return nil, err
 		}
 
-		jobs = append(jobs, job)
-	})
+		for _, link := range links {
+			job, err := scrapeBruneidaJob(link)
 
-	collectors := []*colly.Collector{linkCollector, jobCollector}
+			if err != nil {
+				fmt.Printf("Fail to scrape job for link : %s, err: %s \n", link, err)
+				continue
+			}
 
-	HandleError(collectors)
-
-	HandleRequest(collectors)
-
-	// Limit to one page
-	for i := 1; i < 2; i++ {
-		url := fmt.Sprintf("https://www.bruneida.com/brunei/jobs/?&page=%s", strconv.Itoa(i))
-		linkCollector.Visit(url)
+			jobs = append(jobs, job)
+		}
 	}
 
-	jobCollector.Visit("https://www.bruneida.com/FEMALE-SALES-ASSISTANT-106578")
+	return jobs, nil
+}
 
-	return jobs
+func scrapeBruneidaJob(url string) (*model.Job, error) {
 
+	doc, err := getDocument(url)
+	if err != nil {
+		return nil, err
+	}
+
+	jobTitle := doc.Find("#title-box-inner div.inline-block.pull-left h1").Text()
+	company := doc.Find("#ad-contact ul li:first-child span.bb b.small").Text()
+	salary := doc.Find("#ad-body-inner .opt .opt-dl:nth-child(3) .dd").Text()
+
+	description, err := minifyHtml(doc.Find("#full-description").Text())
+	if err != nil {
+		return nil, err
+	}
+
+	locations := []string{}
+	doc.Find("#ad-body-inner .opt .opt-dl").EachWithBreak(func(i int, s *goquery.Selection) bool {
+		title := s.Find(".dt").Text()
+
+		if strings.Contains(title, "City") || strings.Contains(title, "Local") {
+			locations = append(locations, s.Find(".dd").Text())
+		}
+
+		return true
+	})
+
+	location := strings.Join(locations, " ")
+
+	providerJobId, err := getBruneidaJobId(url)
+	if err != nil {
+		return nil, err
+	}
+
+	job := model.Job{
+		ProviderJobId: providerJobId,
+		Provider:      Bruneida,
+		Title:         jobTitle,
+		Company:       company,
+		Salary:        salary,
+		Location:      location,
+		Description:   *description,
+	}
+
+	return &job, nil
+
+}
+
+func getJobLinks(url string) ([]string, error) {
+
+	links := []string{}
+
+	doc, err := getDocument(url)
+	if err != nil {
+		return nil, err
+	}
+
+	doc.Find(".az-detail>h3.az-title>a.h-elips").EachWithBreak(func(i int, s *goquery.Selection) bool {
+		link, exist := s.Attr("href")
+
+		if !exist {
+			return true
+		}
+
+		links = append(links, link)
+
+		return true
+	})
+
+	return links, nil
+
+}
+
+func getBruneidaJobId(s string) (string, error) {
+	r := regexp.MustCompile(`-(?P<jobId>\d+)`)
+	matches := r.FindStringSubmatch(s)
+
+	if len(matches) < 1 {
+		return "", errors.New("no job id found")
+	}
+
+	if matches[1] == "" {
+		return "", errors.New("no job id found")
+	}
+
+	return matches[1], nil
 }

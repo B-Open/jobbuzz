@@ -8,7 +8,6 @@ func (s *Service) GetJobs() ([]*model.Job, error) {
 	var jobs []*model.Job
 
 	results := s.DB.Find(&jobs)
-
 	if err := results.Error; err != nil {
 		return nil, err
 	}
@@ -17,8 +16,8 @@ func (s *Service) GetJobs() ([]*model.Job, error) {
 }
 
 func (s *Service) CreateJob(job *model.Job) (*model.Job, error) {
-	result := s.DB.Create(&job)
 
+	result := s.DB.FirstOrCreate(&job, model.Job{Provider: job.Provider, ProviderJobId: job.ProviderJobId})
 	if err := result.Error; err != nil {
 		return nil, err
 	}
