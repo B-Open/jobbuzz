@@ -16,9 +16,15 @@ type MockService struct {
 	mock.Mock
 }
 
-func (s *MockService) GetJobs() ([]model.Job, error) {
+func (s *MockService) GetJobs() ([]*model.Job, error) {
 	args := s.Called()
-	return args.Get(0).([]model.Job), args.Error(1)
+
+	jobs := args.Get(0)
+	if jobs == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).([]*model.Job), args.Error(1)
 }
 
 func TestGetJobs(t *testing.T) {
@@ -27,7 +33,7 @@ func TestGetJobs(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 
 		service := MockService{}
-		service.On("GetJobs").Return([]model.Job{}, nil)
+		service.On("GetJobs").Return([]*model.Job{}, nil)
 
 		controller := Controller{Service: &service}
 		controller.GetJobs(c)
@@ -40,7 +46,7 @@ func TestGetJobs(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 
 		service := MockService{}
-		service.On("GetJobs").Return([]model.Job{
+		service.On("GetJobs").Return([]*model.Job{
 			{
 				BaseModel: model.BaseModel{
 					ID: 1,
@@ -60,7 +66,7 @@ func TestGetJobs(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 
 		service := MockService{}
-		service.On("GetJobs").Return([]model.Job{}, errors.New("service error"))
+		service.On("GetJobs").Return([]*model.Job{}, errors.New("service error"))
 
 		controller := Controller{Service: &service}
 

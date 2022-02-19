@@ -1,0 +1,46 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+"""
+The input for registering a new user.
+"""
+input NewUser {
+  email: String!
+  password: String!
+}
+
+"""
+The registered User.
+"""
+type User {
+  id: Int!
+  email: String!
+}
+
+"""
+A single job listing item.
+"""
+type Job {
+  id: Int!
+  createdAt: String!
+  updatedAt: String!
+  title: String!
+  company: String!
+  salary: String!
+  location: String!
+}
+
+type Query {
+  """
+  Get all jobs.
+  """
+  jobs: [Job!]!
+}
+
+type Mutation {
+  """
+  Create a new account for the current user.
+  """
+  registerAccount(input: NewUser!): User!
+}
