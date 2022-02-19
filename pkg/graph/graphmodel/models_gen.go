@@ -2,6 +2,7 @@
 
 package graphmodel
 
+// A single job listing item.
 type Job struct {
 	ID        int    `json:"id"`
 	CreatedAt string `json:"createdAt"`
@@ -12,11 +13,13 @@ type Job struct {
 	Location  string `json:"location"`
 }
 
+// The input for registering a new user.
 type NewUser struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
+// The registered User.
 type User struct {
 	ID    int    `json:"id"`
 	Email string `json:"email"`

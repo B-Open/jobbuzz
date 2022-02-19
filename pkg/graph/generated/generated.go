@@ -239,16 +239,25 @@ var sources = []*ast.Source{
 #
 # https://gqlgen.com/getting-started/
 
+"""
+The input for registering a new user.
+"""
 input NewUser {
   email: String!
   password: String!
 }
 
+"""
+The registered User.
+"""
 type User {
   id: Int!
   email: String!
 }
 
+"""
+A single job listing item.
+"""
 type Job {
   id: Int!
   createdAt: String!
@@ -260,10 +269,16 @@ type Job {
 }
 
 type Query {
+  """
+  Get all jobs.
+  """
   jobs: [Job!]!
 }
 
 type Mutation {
+  """
+  Create a new account for the current user.
+  """
   registerAccount(input: NewUser!): User!
 }
 `, BuiltIn: false},
