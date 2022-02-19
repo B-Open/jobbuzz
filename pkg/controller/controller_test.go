@@ -18,6 +18,12 @@ type MockService struct {
 
 func (s *MockService) GetJobs() ([]*model.Job, error) {
 	args := s.Called()
+
+	jobs := args.Get(0)
+	if jobs == nil {
+		return nil, args.Error(1)
+	}
+
 	return args.Get(0).([]*model.Job), args.Error(1)
 }
 
