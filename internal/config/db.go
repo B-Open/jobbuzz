@@ -18,7 +18,7 @@ func (configuration *Configuration) GetDb() (*gorm.DB, error) {
 }
 
 func MigrateDb(db *gorm.DB) error {
-	return db.AutoMigrate(&model.Job{})
+	return db.AutoMigrate(&model.Job{}, &model.User{})
 }
 
 func (configuration *Configuration) getDbConfig() *gomysql.Config {

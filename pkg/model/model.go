@@ -24,3 +24,9 @@ type Job struct {
 	Link          string `json:"link"`
 	Description   string `json:"description"`
 }
+
+type User struct {
+	BaseModel
+	Email        string `json:"email"`
+	PasswordHash string
+}
