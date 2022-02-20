@@ -3,6 +3,7 @@ module github.com/b-open/jobbuzz
 go 1.17
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/gin-contrib/logger v0.2.1
 	github.com/gin-gonic/gin v1.7.7

@@ -25,6 +25,7 @@ type Job struct {
 	Description   string `json:"description"`
 }
 
+// TODO: set unique constraint on email
 type User struct {
 	BaseModel
 	Email        string `json:"email"`
