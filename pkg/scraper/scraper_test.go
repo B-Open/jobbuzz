@@ -2,14 +2,24 @@ package scraper
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetJobcenterJobId(t *testing.T) {
-	jobId, _ := getJobcenterJobId("/web/guest/view-job/-/jobs/82563731/security-guard")
+	want := "82563731"
+	got, err := getJobcenterJobId("/web/guest/view-job/-/jobs/82563731/security-guard")
 
-	if jobId != "82563731" {
-		t.Errorf("Expected %s but got %s", "expected", "got")
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, want, got)
+}
+
+func TestGetJobcenterCompanyId(t *testing.T) {
+	want := "496468"
+	got, err := getJobcenterCompanyId("/web/guest/view-employer/-/employer/496468")
+
+	assert.Nil(t, err)
+	assert.Equal(t, want, got)
 }
 
 func TestGetBruneidaJobId(t *testing.T) {

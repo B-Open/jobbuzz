@@ -2,61 +2,71 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"os"
 
 	"github.com/b-open/jobbuzz/internal/config"
 	"github.com/b-open/jobbuzz/pkg/scraper"
 	"github.com/b-open/jobbuzz/pkg/service"
+	"github.com/mattn/go-isatty"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
+	// set pretty print if using terminal
+	isTerm := isatty.IsTerminal(os.Stdout.Fd())
+	if isTerm {
+		log.Logger = log.Output(
+			zerolog.ConsoleWriter{
+				Out:     os.Stderr,
+				NoColor: false,
+			},
+		)
+	}
 
 	configuration, err := config.LoadConfig("../../")
 
 	if err != nil {
-		log.Fatal("Fail to load db config", err)
+		log.Fatal().Err(err).Msg("Fail to load db config")
 	}
 
 	db, err := configuration.GetDb()
 
 	if err != nil {
-		log.Fatal("Fail to get db connection", err)
+		log.Fatal().Err(err).Msg("Fail to get db connection")
 	}
 
 	service := service.Service{DB: db}
 
 	// Scrape JobCenter
 
-	fmt.Println("Fetching jobs from JobCenter")
+	log.Info().Msg("Fetching jobs from JobCenter")
 	jobs, err := scraper.ScrapeJobcenter()
-
 	if err != nil {
-		fmt.Println("Fail to scrape jobs from jobcenter", err)
+		log.Error().Err(err).Msg("Fail to scrape jobs from jobcenter")
 	} else {
+		log.Info().Msgf("Found %d jobs", len(jobs))
 		for _, job := range jobs {
 			_, err = service.CreateJob(job)
-
 			if err != nil {
-				fmt.Println("Fail to create job")
+				log.Error().Err(err).Str("job", fmt.Sprintf("%+v", job))
 			}
 		}
 	}
 
 	// Scrape Bruneida
 
-	fmt.Println("Fetching jobs from Bruneida")
+	log.Info().Msg("Fetching jobs from Bruneida")
 	jobs, err = scraper.ScrapeBruneida()
-
 	if err != nil {
-		fmt.Println("Fail to scrape jobs from Bruneida", err)
+		log.Error().Err(err).Msg("Fail to scrape jobs from Bruneida")
 	} else {
+	log.Info().Msgf("Found %d jobs", len(jobs))
 		for _, job := range jobs {
 			_, err = service.CreateJob(job)
-
 			if err != nil {
-				fmt.Println("Fail to create job")
+				log.Error().Err(err).Str("job", fmt.Sprintf("%+v", job))
 			}
 		}
 	}
-
 }

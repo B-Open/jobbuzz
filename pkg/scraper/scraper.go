@@ -20,7 +20,6 @@ func getDocument(url string) (*goquery.Document, error) {
 	var doc *goquery.Document
 
 	err := retry.Do(func() error {
-
 		res, err := http.Get(url)
 		if err != nil {
 			return err
