@@ -72,7 +72,7 @@ func scrapeBruneidaJob(url string) (*model.Job, error) {
 	}
 
 	job := model.Job{
-		ProviderJobId: providerJobId,
+		ProviderJobID: providerJobId,
 		Provider:      Bruneida,
 		Title:         jobTitle,
 		Company:       company,

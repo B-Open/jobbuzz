@@ -50,7 +50,7 @@ func ScrapeJobcenter() ([]*model.Job, error) {
 
 		job := model.Job{
 			Provider:      JobCenter,
-			ProviderJobId: providerJobId,
+			ProviderJobID: providerJobId,
 			Title:         jobTitle,
 			Company:       company,
 			Salary:        salary,

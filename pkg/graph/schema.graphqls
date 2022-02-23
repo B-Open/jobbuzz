@@ -31,11 +31,22 @@ type Job {
   location: String!
 }
 
+type Company {
+  id: Int!
+  createdAt: String!
+  updatedAt: String!
+  name: String!
+}
+
 type Query {
   """
   Get all jobs.
   """
   jobs: [Job!]!
+  """
+  Get all companies.
+  """
+  companies: [Company!]!
 }
 
 type Mutation {
