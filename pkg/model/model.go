@@ -18,8 +18,8 @@ type Job struct {
 	BaseModel
 	CompanyID     *uint64  `json:"company_id"`
 	Company       *Company `json:"company"`
-	Provider      int      `gorm:"primarykey;autoIncrement:false" json:"provider"`
-	ProviderJobID string   `gorm:"primarykey;autoIncrement:false" json:"providerJobId"`
+	Provider      int      `gorm:"index:idx_provider_provider_job_id,unique" json:"provider"`
+	ProviderJobID string   `gorm:"index:idx_provider_provider_job_id,unique" json:"providerJobId"`
 	Title         string   `json:"title"`
 	Salary        string   `json:"salary"`
 	Location      string   `json:"location"`
@@ -29,8 +29,8 @@ type Job struct {
 
 type Company struct {
 	BaseModel
-	Provider          int    `gorm:"primarykey;autoIncrement:false" json:"provider"`
-	ProviderCompanyID string `gorm:"primarykey;autoIncrement:false" json:"providerCompanyId"`
+	Provider          int    `gorm:"index:idx_provider_provider_company_id,unique" json:"provider"`
+	ProviderCompanyID string `gorm:"index:idx_provider_provider_company_id,unique" json:"providerCompanyId"`
 	Name              string `json:"name"`
 	Content           string `json:"content"` // TODO: can be refactored to use gorm custom data type
 	Link              string `json:"link"`
