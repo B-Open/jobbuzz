@@ -29,7 +29,7 @@ func ScrapeJobcenter() ([]*model.Job, error) {
 	doc.Find("li.list-group-item.list-group-item-flex").EachWithBreak(func(i int, s *goquery.Selection) bool {
 
 		jobTitle := s.Find(".jp_job_post_right_cont h4 a").Text()
-		company := s.Find(".jp_job_post_right_cont p a").Text()
+		// company := s.Find(".jp_job_post_right_cont p a").Text()
 		salary := s.Find(".jp_job_post_right_cont>ul li:first-child").Text()
 		location := s.Find(".jp_job_post_right_cont>ul li:nth-child(2)").Text()
 
@@ -52,7 +52,7 @@ func ScrapeJobcenter() ([]*model.Job, error) {
 			Provider:      JobCenter,
 			ProviderJobID: providerJobId,
 			Title:         jobTitle,
-			Company:       company,
+			// Company:       company,
 			Salary:        salary,
 			Location:      location,
 			Link:          link,

@@ -45,7 +45,7 @@ func scrapeBruneidaJob(url string) (*model.Job, error) {
 	}
 
 	jobTitle := doc.Find("#title-box-inner div.inline-block.pull-left h1").Text()
-	company := doc.Find("#ad-contact ul li:first-child span.bb b.small").Text()
+	// company := doc.Find("#ad-contact ul li:first-child span.bb b.small").Text()
 	salary := doc.Find("#ad-body-inner .opt .opt-dl:nth-child(3) .dd").Text()
 
 	description, err := minifyHtml(doc.Find("#full-description").Text())
@@ -75,7 +75,7 @@ func scrapeBruneidaJob(url string) (*model.Job, error) {
 		ProviderJobID: providerJobId,
 		Provider:      Bruneida,
 		Title:         jobTitle,
-		Company:       company,
+		// Company:       company,
 		Salary:        salary,
 		Location:      location,
 		Description:   *description,
