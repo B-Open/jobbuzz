@@ -58,11 +58,19 @@ interface PaginatedOutput {
   current_page: Int!
   total_page: Int!
   total: Int!
+  error: StandardError
 }
 
 interface GenericError {
   """
   A generic error
+  """
+  message: String!
+}
+
+type StandardError implements GenericError {
+  """
+  A standard error with just a simple message
   """
   message: String!
 }
@@ -78,7 +86,6 @@ type JobOutput implements PaginatedOutput {
   total_page: Int!
   total: Int!
   data: [Job!]!
-  error: GenericError
 }
 
 union NewUser = User | GenericError
