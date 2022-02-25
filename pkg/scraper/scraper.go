@@ -17,7 +17,7 @@ const (
 )
 
 func getDocument(url string) (*goquery.Document, error) {
-	fmt.Printf("Visting: %s \n", url)
+	fmt.Printf("Visiting: %s \n", url)
 	var doc *goquery.Document
 
 	err := retry.Do(func() error {

@@ -1,8 +1,11 @@
 package scraper
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/pkg/model"
@@ -17,7 +20,12 @@ const (
 func ScrapeJobcenter() ([]*model.Job, error) {
 	jobs := []*model.Job{}
 
-	for i := 1; i < 20; i++ {
+	lastPageNo, err := scrapeJobcenterLastPageNumber()
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 1; i <= lastPageNo; i++ {
 		url := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d&start=%d", jobcenterUrl, pageSize, i)
 
 		doc, err := getDocument(url)
@@ -102,4 +110,27 @@ func getJobcenterJobId(s string) (string, error) {
 	}
 
 	return matches[1], nil
+}
+
+func scrapeJobcenterLastPageNumber() (int, error) {
+
+	urlString := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d&start=%d", jobcenterUrl, pageSize, 1)
+
+	doc, err := getDocument(urlString)
+
+	if err != nil {
+		return 0, errors.New("failed to get document")
+	}
+
+	pageNoAsString := doc.Find("ul.pagination>li.page-item:nth-last-child(2)>a").Text()
+
+	pageNoAsString = strings.ReplaceAll(pageNoAsString, "Page", "")
+
+	pageNo, err := strconv.Atoi(pageNoAsString)
+
+	if err != nil {
+		return 0, errors.New("failed to get page number")
+	}
+
+	return pageNo, nil
 }
