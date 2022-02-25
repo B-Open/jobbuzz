@@ -40,14 +40,19 @@ func main() {
 	}
 
 	service := service.Service{DB: db}
-	controller := controller.Controller{Service: &service}
+	c := controller.Controller{Service: &service}
 
 	r := gin.New()
 
 	r.Use(middleware.SetLogger(isTerm))
 	r.Use(gin.Recovery())
 
+	if gin.IsDebugging() {
+		r.GET("/", controller.PlaygroundHandler())
+	}
+	r.POST("/graphql", controller.GraphqlHandler(&service))
+
 	apiV1 := r.Group("/api/v1")
-	apiV1.GET("/job", controller.GetJobs)
+	apiV1.GET("/job", c.GetJobs)
 	r.Run()
 }

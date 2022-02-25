@@ -6,7 +6,7 @@ import (
 )
 
 type Servicer interface {
-    GetJobs() ([]model.Job, error)
+	GetJobs() ([]*model.Job, error)
 }
 
 type Service struct {
