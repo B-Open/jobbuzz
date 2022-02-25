@@ -5,7 +5,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/pkg/model"
@@ -13,15 +12,14 @@ import (
 )
 
 const (
-	pageSize = 200
+	pageSize = 10
 
 	jobcenterUrl = "https://www.jobcentrebrunei.gov.bn"
 )
 
-var jobcenterJobs = []*model.Job{}
-
 func ScrapeJobcenter() ([]*model.Job, error) {
-	var wg sync.WaitGroup
+
+	jobcenterScraper := createScraper()
 
 	lastPageNo, err := scrapeJobcenterLastPageNumber()
 	if err != nil {
@@ -29,18 +27,18 @@ func ScrapeJobcenter() ([]*model.Job, error) {
 	}
 
 	for i := 1; i <= lastPageNo; i++ {
-		wg.Add(1)
+		jobcenterScraper.wg.Add(1)
 		url := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d&start=%d", jobcenterUrl, pageSize, i)
-		go scrapeJobcenterJobsListing(url, &wg)
+		go (&jobcenterScraper).scrapeJobcenterJobsListing(url)
 	}
 
-	wg.Wait()
+	jobcenterScraper.wg.Wait()
 
-	return jobcenterJobs, nil
+	return jobcenterScraper.jobs, nil
 }
 
-func scrapeJobcenterJobsListing(url string, wg *sync.WaitGroup) bool {
-	defer wg.Done()
+func (jobcenterScraper *scraper) scrapeJobcenterJobsListing(url string) bool {
+	defer jobcenterScraper.wg.Done()
 
 	doc, err := getDocument(url)
 	if err != nil {
@@ -49,51 +47,53 @@ func scrapeJobcenterJobsListing(url string, wg *sync.WaitGroup) bool {
 	}
 
 	doc.Find("li.list-group-item.list-group-item-flex").Each(func(i int, s *goquery.Selection) {
-		wg.Add(1)
+		jobcenterScraper.wg.Add(1)
 
-		go func(s *goquery.Selection) bool {
-			defer wg.Done()
-			jobTitle := s.Find(".jp_job_post_right_cont h4 a").Text()
-			company := s.Find(".jp_job_post_right_cont p a").Text()
-			salary := s.Find(".jp_job_post_right_cont>ul li:first-child").Text()
-			location := s.Find(".jp_job_post_right_cont>ul li:nth-child(2)").Text()
-
-			link, exist := s.Find(".jp_job_post_right_cont h4 a").Attr("href")
-			if !exist {
-				fmt.Printf("Fail to scrape job link : %s, err: %s \n", link, err)
-				return true
-			}
-
-			providerJobId, err := getJobcenterJobId(link)
-			if err != nil {
-				fmt.Printf("Fail to scrape job id for link : %s, err: %s \n", link, err)
-				return true
-			}
-
-			description, err := scrapeJobDescription(link)
-			if err != nil {
-				fmt.Printf("Fail to scrape job description : %s, err: %s \n", link, err)
-				return true
-			}
-
-			job := model.Job{
-				Provider:      JobCenter,
-				ProviderJobId: providerJobId,
-				Title:         jobTitle,
-				Company:       company,
-				Salary:        salary,
-				Location:      location,
-				Link:          link,
-				Description:   *description,
-			}
-
-			jobcenterJobs = append(jobcenterJobs, &job)
-			return true
-
-		}(s)
+		go jobcenterScraper.scrapeJobcenterJob(s)
 	})
 
 	return true
+}
+
+func (jobcenterScraper *scraper) scrapeJobcenterJob(s *goquery.Selection) bool {
+	defer jobcenterScraper.wg.Done()
+	jobTitle := s.Find(".jp_job_post_right_cont h4 a").Text()
+	company := s.Find(".jp_job_post_right_cont p a").Text()
+	salary := s.Find(".jp_job_post_right_cont>ul li:first-child").Text()
+	location := s.Find(".jp_job_post_right_cont>ul li:nth-child(2)").Text()
+
+	link, exist := s.Find(".jp_job_post_right_cont h4 a").Attr("href")
+	if !exist {
+		fmt.Printf("Fail to scrape job link : %s \n", link)
+		return true
+	}
+
+	providerJobId, err := getJobcenterJobId(link)
+	if err != nil {
+		fmt.Printf("Fail to scrape job id for link : %s, err: %s \n", link, err)
+		return true
+	}
+
+	description, err := scrapeJobDescription(link)
+	if err != nil {
+		fmt.Printf("Fail to scrape job description : %s, err: %s \n", link, err)
+		return true
+	}
+
+	job := model.Job{
+		Provider:      JobCenter,
+		ProviderJobId: providerJobId,
+		Title:         jobTitle,
+		Company:       company,
+		Salary:        salary,
+		Location:      location,
+		Link:          link,
+		Description:   *description,
+	}
+
+	jobcenterScraper.jobs = append(jobcenterScraper.jobs, &job)
+	return true
+
 }
 
 func scrapeJobDescription(jobUrl string) (*string, error) {

@@ -5,33 +5,30 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/pkg/model"
 )
 
-var bruneidaJobs = []*model.Job{}
-
 func ScrapeBruneida() ([]*model.Job, error) {
 
-	var wg sync.WaitGroup
+	bruneidaScraper := createScraper()
 
-	for i := 1; i < 2; i++ {
-		wg.Add(1)
+	for i := 1; i < 30; i++ {
+		bruneidaScraper.wg.Add(1)
 		url := fmt.Sprintf("https://www.bruneida.com/brunei/jobs/?&page=%d", i)
 
-		go scrapeBruneidaJobsListing(url, &wg)
+		go (&bruneidaScraper).scrapeBruneidaJobsListing(url)
 
 	}
 
-	wg.Wait()
+	bruneidaScraper.wg.Wait()
 
-	return bruneidaJobs, nil
+	return bruneidaScraper.jobs, nil
 }
 
-func scrapeBruneidaJobsListing(url string, wg *sync.WaitGroup) {
-	defer wg.Done()
+func (bruneidaScraper *scraper) scrapeBruneidaJobsListing(url string) {
+	defer bruneidaScraper.wg.Done()
 
 	links, err := getJobLinks(url)
 	if err != nil {
@@ -39,26 +36,18 @@ func scrapeBruneidaJobsListing(url string, wg *sync.WaitGroup) {
 	}
 
 	for _, link := range links {
-		wg.Add(1)
+		bruneidaScraper.wg.Add(1)
 
-		go func(link string) {
-			defer wg.Done()
-			job, err := scrapeBruneidaJob(link)
-
-			if err != nil {
-				fmt.Printf("Fail to scrape job for link : %s, err: %s \n", link, err)
-			}
-
-			bruneidaJobs = append(bruneidaJobs, job)
-		}(link)
+		go bruneidaScraper.scrapeBruneidaJob(link)
 	}
 }
 
-func scrapeBruneidaJob(url string) (*model.Job, error) {
-
+func (bruneidaScraper *scraper) scrapeBruneidaJob(url string) bool {
+	bruneidaScraper.wg.Done()
 	doc, err := getDocument(url)
 	if err != nil {
-		return nil, err
+		fmt.Printf("Fail to scrape url : %s, err: %s \n", url, err)
+		return false
 	}
 
 	jobTitle := doc.Find("#title-box-inner div.inline-block.pull-left h1").Text()
@@ -67,7 +56,8 @@ func scrapeBruneidaJob(url string) (*model.Job, error) {
 
 	description, err := minifyHtml(doc.Find("#full-description").Text())
 	if err != nil {
-		return nil, err
+		fmt.Printf("Fail to get description : %s, err: %s \n", url, err)
+		return false
 	}
 
 	locations := []string{}
@@ -85,7 +75,8 @@ func scrapeBruneidaJob(url string) (*model.Job, error) {
 
 	providerJobId, err := getBruneidaJobId(url)
 	if err != nil {
-		return nil, err
+		fmt.Printf("Fail to get job provider id : %s, err: %s \n", url, err)
+		return false
 	}
 
 	job := model.Job{
@@ -98,7 +89,8 @@ func scrapeBruneidaJob(url string) (*model.Job, error) {
 		Description:   *description,
 	}
 
-	return &job, nil
+	bruneidaScraper.jobs = append(bruneidaScraper.jobs, &job)
+	return true
 
 }
 
