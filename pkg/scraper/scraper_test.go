@@ -31,12 +31,3 @@ func TestGetDocument(t *testing.T) {
 	}
 
 }
-
-func TestScrapeJobcenterPageNumber(t *testing.T) {
-
-	_, err := scrapeJobcenterLastPageNumber()
-
-	if err != nil {
-		t.Error(err)
-	}
-}
