@@ -1,7 +1,6 @@
 package scraper
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/pkg/model"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -39,18 +39,19 @@ func ScrapeJobcenter() ([]*model.Job, error) {
 	return jobcenterJobs, nil
 }
 
-func scrapeJobcenterJobsListing(url string, wg *sync.WaitGroup) {
+func scrapeJobcenterJobsListing(url string, wg *sync.WaitGroup) bool {
 	defer wg.Done()
 
 	doc, err := getDocument(url)
 	if err != nil {
 		fmt.Printf("Fail to scrape url : %s, err: %s \n", url, err)
+		return true
 	}
 
 	doc.Find("li.list-group-item.list-group-item-flex").Each(func(i int, s *goquery.Selection) {
 		wg.Add(1)
 
-		go func(s *goquery.Selection) {
+		go func(s *goquery.Selection) bool {
 			defer wg.Done()
 			jobTitle := s.Find(".jp_job_post_right_cont h4 a").Text()
 			company := s.Find(".jp_job_post_right_cont p a").Text()
@@ -60,16 +61,19 @@ func scrapeJobcenterJobsListing(url string, wg *sync.WaitGroup) {
 			link, exist := s.Find(".jp_job_post_right_cont h4 a").Attr("href")
 			if !exist {
 				fmt.Printf("Fail to scrape job link : %s, err: %s \n", link, err)
+				return true
 			}
 
 			providerJobId, err := getJobcenterJobId(link)
 			if err != nil {
 				fmt.Printf("Fail to scrape job id for link : %s, err: %s \n", link, err)
+				return true
 			}
 
 			description, err := scrapeJobDescription(link)
 			if err != nil {
 				fmt.Printf("Fail to scrape job description : %s, err: %s \n", link, err)
+				return true
 			}
 
 			job := model.Job{
@@ -84,9 +88,12 @@ func scrapeJobcenterJobsListing(url string, wg *sync.WaitGroup) {
 			}
 
 			jobcenterJobs = append(jobcenterJobs, &job)
+			return true
 
 		}(s)
 	})
+
+	return true
 }
 
 func scrapeJobDescription(jobUrl string) (*string, error) {
@@ -133,7 +140,7 @@ func scrapeJobcenterLastPageNumber() (int, error) {
 	doc, err := getDocument(urlString)
 
 	if err != nil {
-		return 0, errors.New("failed to get document")
+		return 0, errors.Wrapf(err, "failed to get document. url: %s", urlString)
 	}
 
 	pageNoAsString := doc.Find("ul.pagination>li.page-item:nth-last-child(2)>a").Text()
@@ -143,7 +150,7 @@ func scrapeJobcenterLastPageNumber() (int, error) {
 	pageNo, err := strconv.Atoi(pageNoAsString)
 
 	if err != nil {
-		return 0, errors.New("failed to get page number")
+		return 0, errors.Wrapf(err, "failed to get page number. url: %s", urlString)
 	}
 
 	return pageNo, nil
