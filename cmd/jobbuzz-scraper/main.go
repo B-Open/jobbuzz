@@ -27,25 +27,25 @@ func main() {
 
 	// Scrape JobCenter
 
-	// fmt.Println("Fetching jobs from JobCenter")
-	// jobs, err := scraper.ScrapeJobcenter()
+	fmt.Println("Fetching jobs from JobCenter")
+	jobs, err := scraper.ScrapeJobcenter()
 
-	// if err != nil {
-	// 	fmt.Println("Fail to scrape jobs from jobcenter", err)
-	// } else {
-	// 	for _, job := range jobs {
-	// 		_, err = service.CreateJob(job)
+	if err != nil {
+		fmt.Println("Fail to scrape jobs from jobcenter", err)
+	} else {
+		for _, job := range jobs {
+			_, err = service.CreateJob(job)
 
-	// 		if err != nil {
-	// 			fmt.Println("Fail to create job")
-	// 		}
-	// 	}
-	// }
+			if err != nil {
+				fmt.Println("Fail to create job")
+			}
+		}
+	}
 
 	// Scrape Bruneida
 
 	fmt.Println("Fetching jobs from Bruneida")
-	jobs, err := scraper.ScrapeBruneida()
+	jobs, err = scraper.ScrapeBruneida()
 
 	if err != nil {
 		fmt.Println("Fail to scrape jobs from Bruneida", err)
