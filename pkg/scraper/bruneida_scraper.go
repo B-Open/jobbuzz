@@ -5,36 +5,53 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/pkg/model"
 )
 
+var bruneidaJobs = []*model.Job{}
+
 func ScrapeBruneida() ([]*model.Job, error) {
 
-	jobs := []*model.Job{}
+	var wg sync.WaitGroup
 
-	for i := 1; i < 20; i++ {
+	for i := 1; i < 2; i++ {
+		wg.Add(1)
 		url := fmt.Sprintf("https://www.bruneida.com/brunei/jobs/?&page=%d", i)
 
-		links, err := getJobLinks(url)
-		if err != nil {
-			return jobs, nil
-		}
+		go scrapeBruneidaJobsListing(url, &wg)
 
-		for _, link := range links {
+	}
+
+	wg.Wait()
+
+	return bruneidaJobs, nil
+}
+
+func scrapeBruneidaJobsListing(url string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	links, err := getJobLinks(url)
+	if err != nil {
+		fmt.Printf("Fail to scrape url : %s, err: %s \n", url, err)
+	}
+
+	for _, link := range links {
+		wg.Add(1)
+
+		go func(link string) {
+			defer wg.Done()
 			job, err := scrapeBruneidaJob(link)
 
 			if err != nil {
 				fmt.Printf("Fail to scrape job for link : %s, err: %s \n", link, err)
-				continue
 			}
 
-			jobs = append(jobs, job)
-		}
+			bruneidaJobs = append(bruneidaJobs, job)
+		}(link)
 	}
-
-	return jobs, nil
 }
 
 func scrapeBruneidaJob(url string) (*model.Job, error) {

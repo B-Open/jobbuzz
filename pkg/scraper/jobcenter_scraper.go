@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/pkg/model"
@@ -17,8 +18,10 @@ const (
 	jobcenterUrl = "https://www.jobcentrebrunei.gov.bn"
 )
 
+var jobcenterJobs = []*model.Job{}
+
 func ScrapeJobcenter() ([]*model.Job, error) {
-	jobs := []*model.Job{}
+	var wg sync.WaitGroup
 
 	lastPageNo, err := scrapeJobcenterLastPageNumber()
 	if err != nil {
@@ -26,15 +29,29 @@ func ScrapeJobcenter() ([]*model.Job, error) {
 	}
 
 	for i := 1; i <= lastPageNo; i++ {
+		wg.Add(1)
 		url := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d&start=%d", jobcenterUrl, pageSize, i)
+		go scrapeJobcenterJobsListing(url, &wg)
+	}
 
-		doc, err := getDocument(url)
-		if err != nil {
-			return jobs, nil
-		}
+	wg.Wait()
 
-		doc.Find("li.list-group-item.list-group-item-flex").EachWithBreak(func(i int, s *goquery.Selection) bool {
+	return jobcenterJobs, nil
+}
 
+func scrapeJobcenterJobsListing(url string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	doc, err := getDocument(url)
+	if err != nil {
+		fmt.Printf("Fail to scrape url : %s, err: %s \n", url, err)
+	}
+
+	doc.Find("li.list-group-item.list-group-item-flex").Each(func(i int, s *goquery.Selection) {
+		wg.Add(1)
+
+		go func(s *goquery.Selection) {
+			defer wg.Done()
 			jobTitle := s.Find(".jp_job_post_right_cont h4 a").Text()
 			company := s.Find(".jp_job_post_right_cont p a").Text()
 			salary := s.Find(".jp_job_post_right_cont>ul li:first-child").Text()
@@ -42,17 +59,17 @@ func ScrapeJobcenter() ([]*model.Job, error) {
 
 			link, exist := s.Find(".jp_job_post_right_cont h4 a").Attr("href")
 			if !exist {
-				return true
+				fmt.Printf("Fail to scrape job link : %s, err: %s \n", link, err)
 			}
 
 			providerJobId, err := getJobcenterJobId(link)
 			if err != nil {
-				return true
+				fmt.Printf("Fail to scrape job id for link : %s, err: %s \n", link, err)
 			}
 
 			description, err := scrapeJobDescription(link)
 			if err != nil {
-				return true
+				fmt.Printf("Fail to scrape job description : %s, err: %s \n", link, err)
 			}
 
 			job := model.Job{
@@ -66,13 +83,10 @@ func ScrapeJobcenter() ([]*model.Job, error) {
 				Description:   *description,
 			}
 
-			jobs = append(jobs, &job)
+			jobcenterJobs = append(jobcenterJobs, &job)
 
-			return true
-		})
-	}
-
-	return jobs, nil
+		}(s)
+	})
 }
 
 func scrapeJobDescription(jobUrl string) (*string, error) {

@@ -44,19 +44,19 @@ func main() {
 
 	// Scrape Bruneida
 
-	// fmt.Println("Fetching jobs from Bruneida")
-	// jobs, err = scraper.ScrapeBruneida()
+	fmt.Println("Fetching jobs from Bruneida")
+	jobs, err = scraper.ScrapeBruneida()
 
-	// if err != nil {
-	// 	fmt.Println("Fail to scrape jobs from Bruneida", err)
-	// } else {
-	// 	for _, job := range jobs {
-	// 		_, err = service.CreateJob(job)
+	if err != nil {
+		fmt.Println("Fail to scrape jobs from Bruneida", err)
+	} else {
+		for _, job := range jobs {
+			_, err = service.CreateJob(job)
 
-	// 		if err != nil {
-	// 			fmt.Println("Fail to create job")
-	// 		}
-	// 	}
-	// }
+			if err != nil {
+				fmt.Println("Fail to create job")
+			}
+		}
+	}
 
 }
