@@ -1,33 +1,63 @@
 package scraper
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/pkg/model"
 	"github.com/rs/zerolog/log"
+	"github.com/pkg/errors"
 )
 
 const (
-	pageSize = 30
+	pageSize = 200
 
 	jobcenterUrl = "https://www.jobcentrebrunei.gov.bn"
 )
 
 func ScrapeJobcenter() ([]*model.Job, error) {
-	jobs := []*model.Job{}
 
-	url := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d", jobcenterUrl, pageSize)
+	jobcenterScraper := createScraper()
 
-	doc, err := getDocument(url)
+	lastPageNo, err := scrapeJobcenterLastPageNumber()
 	if err != nil {
 		return nil, err
 	}
 
-	doc.Find("li.list-group-item.list-group-item-flex").EachWithBreak(func(i int, s *goquery.Selection) bool {
+	for i := 1; i <= lastPageNo; i++ {
+		jobcenterScraper.wg.Add(1)
+		url := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d&start=%d", jobcenterUrl, pageSize, i)
+		go (&jobcenterScraper).scrapeJobcenterJobsListing(url)
+	}
 
+	jobcenterScraper.wg.Wait()
+
+	return jobcenterScraper.jobs, nil
+}
+
+func (jobcenterScraper *scraper) scrapeJobcenterJobsListing(url string) bool {
+	defer jobcenterScraper.wg.Done()
+
+	doc, err := getDocument(url)
+	if err != nil {
+		fmt.Printf("Fail to scrape url : %s, err: %s \n", url, err)
+		return true
+	}
+
+	doc.Find("li.list-group-item.list-group-item-flex").Each(func(i int, s *goquery.Selection) {
+		jobcenterScraper.wg.Add(1)
+
+		go jobcenterScraper.scrapeJobcenterJob(s)
+	})
+
+	return true
+}
+
+func (jobcenterScraper *scraper) scrapeJobcenterJob(s *goquery.Selection) bool {
+	defer jobcenterScraper.wg.Done()
 		jobTitle := s.Find(".jp_job_post_right_cont h4 a").Text()
 		companyName := s.Find(".jp_job_post_right_cont p a").Text()
 		salary := s.Find(".jp_job_post_right_cont>ul li:first-child").Text()
@@ -79,16 +109,10 @@ func ScrapeJobcenter() ([]*model.Job, error) {
 			Description:   *description,
 			Company:       company,
 		}
-		jobs = append(jobs, &job)
+	jobcenterScraper.jobs = append(jobcenterScraper.jobs, &job)
 
-		return true
-	})
+	return true
 
-	// TODO: scrape company page
-
-	// TODO: attach company information
-
-	return jobs, nil
 }
 
 func scrapeJobDescription(jobUrl string) (*string, error) {
@@ -126,12 +150,35 @@ func getJobcenterId(url, idType1, idType2 string) (string, error) {
 	matches := r.FindStringSubmatch(url)
 
 	if len(matches) < 2 {
-		return "", errors.New(fmt.Sprintf("job id is empty: %s", url))
+		return "", fmt.Errorf("job id is empty: %s", url)
 	}
 
 	if matches[1] == "" {
-		return "", errors.New(fmt.Sprintf("no job id found: %s", url))
+		return "", fmt.Errorf("no job id found: %s", url)
 	}
 
 	return matches[1], nil
+}
+
+func scrapeJobcenterLastPageNumber() (int, error) {
+
+	urlString := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d&start=%d", jobcenterUrl, pageSize, 1)
+
+	doc, err := getDocument(urlString)
+
+	if err != nil {
+		return 0, errors.Wrapf(err, "failed to get document. url: %s", urlString)
+	}
+
+	pageNoAsString := doc.Find("ul.pagination>li.page-item:nth-last-child(2)>a").Text()
+
+	pageNoAsString = strings.ReplaceAll(pageNoAsString, "Page", "")
+
+	pageNo, err := strconv.Atoi(pageNoAsString)
+
+	if err != nil {
+		return 0, errors.Wrapf(err, "failed to get page number. url: %s", urlString)
+	}
+
+	return pageNo, nil
 }

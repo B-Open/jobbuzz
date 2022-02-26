@@ -4,9 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/avast/retry-go"
+	"github.com/b-open/jobbuzz/pkg/model"
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/html"
 )
@@ -16,7 +18,17 @@ const (
 	Bruneida  = 2
 )
 
+type scraper struct {
+	wg   sync.WaitGroup
+	jobs []*model.Job
+}
+
+func createScraper() scraper {
+	return scraper{wg: sync.WaitGroup{}, jobs: []*model.Job{}}
+}
+
 func getDocument(url string) (*goquery.Document, error) {
+	fmt.Printf("Visiting: %s \n", url)
 	var doc *goquery.Document
 
 	err := retry.Do(func() error {
