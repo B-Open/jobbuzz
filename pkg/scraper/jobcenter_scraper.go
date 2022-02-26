@@ -8,8 +8,8 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/pkg/model"
-	"github.com/rs/zerolog/log"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -22,7 +22,7 @@ func ScrapeJobcenter() ([]*model.Job, error) {
 
 	jobcenterScraper := createScraper()
 
-	lastPageNo, err := scrapeJobcenterLastPageNumber()
+	lastPageNo, err := jobcenterScraper.scrapeJobcenterLastPageNumber()
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func ScrapeJobcenter() ([]*model.Job, error) {
 func (jobcenterScraper *scraper) scrapeJobcenterJobsListing(url string) bool {
 	defer jobcenterScraper.wg.Done()
 
-	doc, err := getDocument(url)
+	doc, err := jobcenterScraper.FetchClient.GetDocument(url)
 	if err != nil {
 		log.Error().Err(err).Msgf("Fail to scrape url : %s", url)
 		return true
@@ -58,68 +58,68 @@ func (jobcenterScraper *scraper) scrapeJobcenterJobsListing(url string) bool {
 
 func (jobcenterScraper *scraper) scrapeJobcenterJob(s *goquery.Selection) bool {
 	defer jobcenterScraper.wg.Done()
-		jobTitle := s.Find(".jp_job_post_right_cont h4 a").Text()
-		companyName := s.Find(".jp_job_post_right_cont p a").Text()
-		salary := s.Find(".jp_job_post_right_cont>ul li:first-child").Text()
-		location := s.Find(".jp_job_post_right_cont>ul li:nth-child(2)").Text()
+	jobTitle := s.Find(".jp_job_post_right_cont h4 a").Text()
+	companyName := s.Find(".jp_job_post_right_cont p a").Text()
+	salary := s.Find(".jp_job_post_right_cont>ul li:first-child").Text()
+	location := s.Find(".jp_job_post_right_cont>ul li:nth-child(2)").Text()
 
-		link, exist := s.Find(".jp_job_post_right_cont h4 a").Attr("href")
-		if !exist {
-			return true
-		}
-		companyLink, companyExist := s.Find(".jp_job_post_right_cont p a").Attr("href")
+	link, exist := s.Find(".jp_job_post_right_cont h4 a").Attr("href")
+	if !exist {
+		return true
+	}
+	companyLink, companyExist := s.Find(".jp_job_post_right_cont p a").Attr("href")
 
-		providerJobId, err := getJobcenterJobId(link)
+	providerJobId, err := getJobcenterJobId(link)
+	if err != nil {
+		log.Error().Err(err)
+		return true
+	}
+	var providerCompanyId string
+	if companyExist {
+		providerCompanyId, err = getJobcenterCompanyId(companyLink)
 		if err != nil {
 			log.Error().Err(err)
 			return true
 		}
-		var providerCompanyId string
-		if companyExist {
-			providerCompanyId, err = getJobcenterCompanyId(companyLink)
-			if err != nil {
-				log.Error().Err(err)
-				return true
-			}
-		}
+	}
 
-		description, err := scrapeJobDescription(link)
-		if err != nil {
-			log.Error().Err(err)
-			return true
-		}
+	description, err := jobcenterScraper.scrapeJobDescription(link)
+	if err != nil {
+		log.Error().Err(err)
+		return true
+	}
 
-		// TODO: this get created automatically but it is not efficient to have duplicate companies in all the jobs. Think of a way to only insert companies once, then attach the company id to the jobs, then insert the jobs
-		var company *model.Company
-		if companyExist {
-			company = &model.Company{
-				Provider:          JobCenter,
-				ProviderCompanyID: providerCompanyId,
-				Name:              companyName,
-			}
+	// TODO: this get created automatically but it is not efficient to have duplicate companies in all the jobs. Think of a way to only insert companies once, then attach the company id to the jobs, then insert the jobs
+	var company *model.Company
+	if companyExist {
+		company = &model.Company{
+			Provider:          JobCenter,
+			ProviderCompanyID: providerCompanyId,
+			Name:              companyName,
 		}
+	}
 
-		job := model.Job{
-			Provider:      JobCenter,
-			ProviderJobID: providerJobId,
-			Title:         jobTitle,
-			Salary:        salary,
-			Location:      location,
-			Link:          link,
-			Description:   *description,
-			Company:       company,
-		}
+	job := model.Job{
+		Provider:      JobCenter,
+		ProviderJobID: providerJobId,
+		Title:         jobTitle,
+		Salary:        salary,
+		Location:      location,
+		Link:          link,
+		Description:   *description,
+		Company:       company,
+	}
 	jobcenterScraper.jobs = append(jobcenterScraper.jobs, &job)
 
 	return true
 
 }
 
-func scrapeJobDescription(jobUrl string) (*string, error) {
+func (s *scraper) scrapeJobDescription(jobUrl string) (*string, error) {
 
 	url := fmt.Sprintf("%s%s", jobcenterUrl, jobUrl)
 
-	doc, err := getDocument(url)
+	doc, err := s.FetchClient.GetDocument(url)
 	if err != nil {
 		return nil, err
 	}
@@ -160,11 +160,11 @@ func getJobcenterId(url, idType1, idType2 string) (string, error) {
 	return matches[1], nil
 }
 
-func scrapeJobcenterLastPageNumber() (int, error) {
+func (s *scraper) scrapeJobcenterLastPageNumber() (int, error) {
 
 	urlString := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d&start=%d", jobcenterUrl, pageSize, 1)
 
-	doc, err := getDocument(urlString)
+	doc, err := s.FetchClient.GetDocument(urlString)
 
 	if err != nil {
 		return 0, errors.Wrapf(err, "failed to get document. url: %s", urlString)

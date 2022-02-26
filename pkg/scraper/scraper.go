@@ -19,16 +19,26 @@ const (
 	Bruneida  = 2
 )
 
-type scraper struct {
-	wg   sync.WaitGroup
-	jobs []*model.Job
-}
+type (
+	scraper struct {
+		wg          sync.WaitGroup
+		jobs        []*model.Job
+		companies   []*model.Company
+		FetchClient FetchClienter
+	}
+
+	FetchClienter interface {
+		GetDocument(url string) (*goquery.Document, error)
+	}
+
+	FetchClient struct{}
+)
 
 func createScraper() scraper {
-	return scraper{wg: sync.WaitGroup{}, jobs: []*model.Job{}}
+	return scraper{wg: sync.WaitGroup{}, jobs: []*model.Job{}, FetchClient: &FetchClient{}}
 }
 
-func getDocument(url string) (*goquery.Document, error) {
+func (c *FetchClient) GetDocument(url string) (*goquery.Document, error) {
 	log.Debug().Msgf("Visiting: %s \n", url)
 	var doc *goquery.Document
 

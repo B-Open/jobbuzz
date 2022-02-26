@@ -31,7 +31,7 @@ func ScrapeBruneida() ([]*model.Job, error) {
 func (bruneidaScraper *scraper) scrapeBruneidaJobsListing(url string) {
 	defer bruneidaScraper.wg.Done()
 
-	links, err := getJobLinks(url)
+	links, err := bruneidaScraper.getJobLinks(url)
 	if err != nil {
 		log.Error().Err(err).Msgf("Fail to scrape url : %s", url)
 		return
@@ -46,7 +46,7 @@ func (bruneidaScraper *scraper) scrapeBruneidaJobsListing(url string) {
 
 func (bruneidaScraper *scraper) scrapeBruneidaJob(url string) bool {
 	defer bruneidaScraper.wg.Done()
-	doc, err := getDocument(url)
+	doc, err := bruneidaScraper.FetchClient.GetDocument(url)
 	if err != nil {
 		log.Error().Err(err).Msgf("Fail to scrape url : %s", url)
 		return false
@@ -96,11 +96,11 @@ func (bruneidaScraper *scraper) scrapeBruneidaJob(url string) bool {
 
 }
 
-func getJobLinks(url string) ([]string, error) {
+func (s *scraper) getJobLinks(url string) ([]string, error) {
 
 	links := []string{}
 
-	doc, err := getDocument(url)
+	doc, err := s.FetchClient.GetDocument(url)
 	if err != nil {
 		return nil, err
 	}
