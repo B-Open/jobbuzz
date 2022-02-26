@@ -43,7 +43,7 @@ func (bruneidaScraper *scraper) scrapeBruneidaJobsListing(url string) {
 }
 
 func (bruneidaScraper *scraper) scrapeBruneidaJob(url string) bool {
-	bruneidaScraper.wg.Done()
+	defer bruneidaScraper.wg.Done()
 	doc, err := getDocument(url)
 	if err != nil {
 		fmt.Printf("Fail to scrape url : %s, err: %s \n", url, err)
