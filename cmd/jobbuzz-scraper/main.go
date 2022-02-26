@@ -41,7 +41,8 @@ func main() {
 	// Scrape JobCenter
 
 	log.Info().Msg("Fetching jobs from JobCenter")
-	jobs, err := scraper.ScrapeJobcenter()
+	jobCentreScraper := scraper.NewJobCentreScraper()
+	jobs, err := jobCentreScraper.ScrapeJobs()
 	if err != nil {
 		log.Error().Err(err).Msg("Fail to scrape jobs from jobcenter")
 	} else {
@@ -57,7 +58,8 @@ func main() {
 	// Scrape Bruneida
 
 	log.Info().Msg("Fetching jobs from Bruneida")
-	jobs, err = scraper.ScrapeBruneida()
+	bruneidaScraper := scraper.NewBruneidaScraper()
+	jobs, err = bruneidaScraper.ScrapeJobs()
 	if err != nil {
 		log.Error().Err(err).Msg("Fail to scrape jobs from Bruneida")
 	} else {

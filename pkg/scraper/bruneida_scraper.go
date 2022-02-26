@@ -5,30 +5,32 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/pkg/model"
 	"github.com/rs/zerolog/log"
 )
 
-func ScrapeBruneida() ([]*model.Job, error) {
+func NewBruneidaScraper() BruneidaScraper {
+	return BruneidaScraper{wg: sync.WaitGroup{}, jobs: []*model.Job{}, FetchClient: &FetchClient{}}
+}
 
-	bruneidaScraper := createScraper()
-
+func (s *BruneidaScraper) ScrapeJobs() ([]*model.Job, error) {
 	for i := 1; i < 30; i++ {
-		bruneidaScraper.wg.Add(1)
+		s.wg.Add(1)
 		url := fmt.Sprintf("https://www.bruneida.com/brunei/jobs/?&page=%d", i)
 
-		go (&bruneidaScraper).scrapeBruneidaJobsListing(url)
+		go s.scrapeBruneidaJobsListing(url)
 
 	}
 
-	bruneidaScraper.wg.Wait()
+	s.wg.Wait()
 
-	return bruneidaScraper.jobs, nil
+	return s.jobs, nil
 }
 
-func (bruneidaScraper *scraper) scrapeBruneidaJobsListing(url string) {
+func (bruneidaScraper *BruneidaScraper) scrapeBruneidaJobsListing(url string) {
 	defer bruneidaScraper.wg.Done()
 
 	links, err := bruneidaScraper.getJobLinks(url)
@@ -44,7 +46,7 @@ func (bruneidaScraper *scraper) scrapeBruneidaJobsListing(url string) {
 	}
 }
 
-func (bruneidaScraper *scraper) scrapeBruneidaJob(url string) bool {
+func (bruneidaScraper *BruneidaScraper) scrapeBruneidaJob(url string) bool {
 	defer bruneidaScraper.wg.Done()
 	doc, err := bruneidaScraper.FetchClient.GetDocument(url)
 	if err != nil {
@@ -96,7 +98,7 @@ func (bruneidaScraper *scraper) scrapeBruneidaJob(url string) bool {
 
 }
 
-func (s *scraper) getJobLinks(url string) ([]string, error) {
+func (s *BruneidaScraper) getJobLinks(url string) ([]string, error) {
 
 	links := []string{}
 

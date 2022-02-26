@@ -20,7 +20,18 @@ const (
 )
 
 type (
-	scraper struct {
+	Scraper interface {
+		ScrapeJobs() ([]*model.Job, error)
+	}
+
+	JobCentreScraper struct {
+		wg          sync.WaitGroup
+		jobs        []*model.Job
+		companies   []*model.Company
+		FetchClient FetchClienter
+	}
+
+	BruneidaScraper struct {
 		wg          sync.WaitGroup
 		jobs        []*model.Job
 		companies   []*model.Company
@@ -33,10 +44,6 @@ type (
 
 	FetchClient struct{}
 )
-
-func createScraper() scraper {
-	return scraper{wg: sync.WaitGroup{}, jobs: []*model.Job{}, FetchClient: &FetchClient{}}
-}
 
 func (c *FetchClient) GetDocument(url string) (*goquery.Document, error) {
 	log.Debug().Msgf("Visiting: %s \n", url)

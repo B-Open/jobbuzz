@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/pkg/model"
@@ -14,31 +15,31 @@ import (
 
 const (
 	pageSize = 200
-
 	jobcenterUrl = "https://www.jobcentrebrunei.gov.bn"
 )
 
-func ScrapeJobcenter() ([]*model.Job, error) {
+func NewJobCentreScraper() JobCentreScraper {
+	return JobCentreScraper{wg: sync.WaitGroup{}, jobs: []*model.Job{}, FetchClient: &FetchClient{}}
+}
 
-	jobcenterScraper := createScraper()
-
-	lastPageNo, err := jobcenterScraper.scrapeJobcenterLastPageNumber()
+func (s *JobCentreScraper) ScrapeJobs() ([]*model.Job, error) {
+	lastPageNo, err := s.scrapeJobcenterLastPageNumber()
 	if err != nil {
 		return nil, err
 	}
 
 	for i := 1; i <= lastPageNo; i++ {
-		jobcenterScraper.wg.Add(1)
+		s.wg.Add(1)
 		url := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d&start=%d", jobcenterUrl, pageSize, i)
-		go (&jobcenterScraper).scrapeJobcenterJobsListing(url)
+		go s.scrapeJobcenterJobsListing(url)
 	}
 
-	jobcenterScraper.wg.Wait()
+	s.wg.Wait()
 
-	return jobcenterScraper.jobs, nil
+	return s.jobs, nil
 }
 
-func (jobcenterScraper *scraper) scrapeJobcenterJobsListing(url string) bool {
+func (jobcenterScraper *JobCentreScraper) scrapeJobcenterJobsListing(url string) bool {
 	defer jobcenterScraper.wg.Done()
 
 	doc, err := jobcenterScraper.FetchClient.GetDocument(url)
@@ -56,7 +57,7 @@ func (jobcenterScraper *scraper) scrapeJobcenterJobsListing(url string) bool {
 	return true
 }
 
-func (jobcenterScraper *scraper) scrapeJobcenterJob(s *goquery.Selection) bool {
+func (jobcenterScraper *JobCentreScraper) scrapeJobcenterJob(s *goquery.Selection) bool {
 	defer jobcenterScraper.wg.Done()
 	jobTitle := s.Find(".jp_job_post_right_cont h4 a").Text()
 	companyName := s.Find(".jp_job_post_right_cont p a").Text()
@@ -115,7 +116,7 @@ func (jobcenterScraper *scraper) scrapeJobcenterJob(s *goquery.Selection) bool {
 
 }
 
-func (s *scraper) scrapeJobDescription(jobUrl string) (*string, error) {
+func (s *JobCentreScraper) scrapeJobDescription(jobUrl string) (*string, error) {
 
 	url := fmt.Sprintf("%s%s", jobcenterUrl, jobUrl)
 
@@ -160,7 +161,7 @@ func getJobcenterId(url, idType1, idType2 string) (string, error) {
 	return matches[1], nil
 }
 
-func (s *scraper) scrapeJobcenterLastPageNumber() (int, error) {
+func (s *JobCentreScraper) scrapeJobcenterLastPageNumber() (int, error) {
 
 	urlString := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d&start=%d", jobcenterUrl, pageSize, 1)
 
