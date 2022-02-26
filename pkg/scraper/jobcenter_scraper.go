@@ -43,7 +43,7 @@ func (jobcenterScraper *scraper) scrapeJobcenterJobsListing(url string) bool {
 
 	doc, err := getDocument(url)
 	if err != nil {
-		fmt.Printf("Fail to scrape url : %s, err: %s \n", url, err)
+		log.Error().Err(err).Msgf("Fail to scrape url : %s", url)
 		return true
 	}
 

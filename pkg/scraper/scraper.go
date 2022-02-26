@@ -1,7 +1,6 @@
 package scraper
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -9,6 +8,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/avast/retry-go"
 	"github.com/b-open/jobbuzz/pkg/model"
+	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/html"
 )
@@ -28,13 +29,13 @@ func createScraper() scraper {
 }
 
 func getDocument(url string) (*goquery.Document, error) {
-	fmt.Printf("Visiting: %s \n", url)
+	log.Debug().Msgf("Visiting: %s \n", url)
 	var doc *goquery.Document
 
 	err := retry.Do(func() error {
 		res, err := http.Get(url)
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "Error in HTTP GET")
 		}
 
 		defer res.Body.Close()
@@ -42,21 +43,18 @@ func getDocument(url string) (*goquery.Document, error) {
 		if res.StatusCode != http.StatusOK {
 			errorMessage := fmt.Sprintf("status code error: %d %s", res.StatusCode, res.Status)
 
-			fmt.Println(errorMessage)
-
-			return errors.New(errorMessage)
+			return fmt.Errorf("Status is not 200 OK: %s", errorMessage)
 		}
 
 		doc, err = goquery.NewDocumentFromReader(res.Body)
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "Error creating goquery document")
 		}
 
 		return nil
 	})
-
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "Error in retry")
 	}
 
 	return doc, nil

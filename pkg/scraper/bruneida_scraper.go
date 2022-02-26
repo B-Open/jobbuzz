@@ -8,6 +8,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/pkg/model"
+	"github.com/rs/zerolog/log"
 )
 
 func ScrapeBruneida() ([]*model.Job, error) {
@@ -32,7 +33,8 @@ func (bruneidaScraper *scraper) scrapeBruneidaJobsListing(url string) {
 
 	links, err := getJobLinks(url)
 	if err != nil {
-		fmt.Printf("Fail to scrape url : %s, err: %s \n", url, err)
+		log.Error().Err(err).Msgf("Fail to scrape url : %s", url)
+		return
 	}
 
 	for _, link := range links {
@@ -46,7 +48,7 @@ func (bruneidaScraper *scraper) scrapeBruneidaJob(url string) bool {
 	defer bruneidaScraper.wg.Done()
 	doc, err := getDocument(url)
 	if err != nil {
-		fmt.Printf("Fail to scrape url : %s, err: %s \n", url, err)
+		log.Error().Err(err).Msgf("Fail to scrape url : %s", url)
 		return false
 	}
 
@@ -56,7 +58,7 @@ func (bruneidaScraper *scraper) scrapeBruneidaJob(url string) bool {
 
 	description, err := minifyHtml(doc.Find("#full-description").Text())
 	if err != nil {
-		fmt.Printf("Fail to get description : %s, err: %s \n", url, err)
+		log.Error().Err(err).Msgf("Fail to get description : %s", url)
 		return false
 	}
 
@@ -75,7 +77,7 @@ func (bruneidaScraper *scraper) scrapeBruneidaJob(url string) bool {
 
 	providerJobId, err := getBruneidaJobId(url)
 	if err != nil {
-		fmt.Printf("Fail to get job provider id : %s, err: %s \n", url, err)
+		log.Error().Err(err).Msgf("Fail to get job provider id : %s", url)
 		return false
 	}
 
