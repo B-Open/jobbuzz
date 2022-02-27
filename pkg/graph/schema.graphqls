@@ -1,11 +1,9 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
+scalar Time
 
 """
 The input for registering a new user.
 """
-input NewUser {
+input NewUserInput {
   email: String!
   password: String!
 }
@@ -23,24 +21,84 @@ A single job listing item.
 """
 type Job {
   id: Int!
-  createdAt: String!
-  updatedAt: String!
+  createdAt: Time!
+  updatedAt: Time!
   title: String!
   company: String!
   salary: String!
   location: String!
 }
 
+input StringFilterInput {
+  """
+  Standard String Type Filters
+  """
+  contains: String
+  notContains: String
+  beginsWith: String
+}
+
+input PaginationInput {
+  """
+  Standard Pagination Inputs
+  """
+  limit: Int = 10
+  offset: Int = 0
+}
+
+interface PaginatedOutput {
+  """
+  Interface for Paginated Outputs
+  """
+  to: Int!
+  from: Int!
+  per_page: Int!
+  current_page: Int!
+  total_page: Int!
+  total: Int!
+  error: StandardError
+}
+
+interface GenericError {
+  """
+  A generic error
+  """
+  message: String!
+}
+
+type StandardError implements GenericError {
+  """
+  A standard error with just a simple message
+  """
+  message: String!
+}
+
+type JobOutput implements PaginatedOutput {
+  """
+  Job output in Paginated Format
+  """
+  to: Int!
+  from: Int!
+  per_page: Int!
+  current_page: Int!
+  total_page: Int!
+  total: Int!
+  data: [Job!]!
+  error: StandardError
+}
+
+union NewUser = User | StandardError
+
 type Query {
   """
   Get all jobs.
   """
-  jobs: [Job!]!
+  jobs(search: StringFilterInput, pagination: PaginationInput!): JobOutput!
 }
 
 type Mutation {
   """
   Create a new account for the current user.
   """
-  registerAccount(input: NewUser!): User!
+  registerAccount(input: NewUserInput!): NewUser!
 }
