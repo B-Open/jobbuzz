@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -37,6 +38,7 @@ func (s *JobCentreScraper) ScrapeJobs() ([]*model.Job, map[string]*model.Company
 	jobs = s.scrapeJobDetails(jobs)
 
 	// get company details and update company id in jobs
+	companies = s.scrapeCompanyDetails(companies)
 
 	return jobs, companies, nil
 }
@@ -91,6 +93,7 @@ func (s *JobCentreScraper) scrapeJobAndCompanies(maxPage int) ([]*model.Job, map
 						Provider:          JobCenter,
 						ProviderCompanyID: providerCompanyId,
 						Name:              companyName,
+						Link:              companyLink,
 					}
 					if _, ok := companies[providerCompanyId]; !ok {
 						companies[providerCompanyId] = company
@@ -147,6 +150,49 @@ func (s *JobCentreScraper) scrapeJobDetails(jobs []*model.Job) []*model.Job {
 	wg.Wait()
 
 	return jobs
+}
+
+func (s *JobCentreScraper) scrapeCompanyDetails(companies map[string]*model.Company) map[string]*model.Company {
+	var wg sync.WaitGroup
+
+	for _, company := range companies {
+		wg.Add(1)
+
+		go func(company *model.Company) {
+			defer wg.Done()
+			doc, err := s.FetchClient.GetDocument(s.BaseURL + company.Link)
+			if err != nil {
+				log.Error().Err(err).Msgf("Fail to scrape url : %s", company.Link)
+				return
+			}
+
+			registrationNo := doc.Find("#collapseTwentyLeftFour > div:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(2) > td:nth-child(3)").Text()
+			description := doc.Find(".jp_job_des > p:nth-child(2)").Text()
+			minifiedDescription, err := minifyHtml(description)
+			if err != nil {
+				log.Warn().Err(err)
+				return
+			}
+
+			// TODO: change to a proper struct
+			// TODO: add more data
+			content := map[string]interface{}{
+				"RegistrationNo": registrationNo,
+				"Description":    minifiedDescription,
+			}
+
+			contentBytes, err := json.Marshal(content)
+			if err != nil {
+				log.Warn().Err(err).Msgf("Error marshalling content to json: %+v", content)
+			}
+
+			company.Content = string(contentBytes)
+		}(company)
+	}
+
+	wg.Wait()
+
+	return companies
 }
 
 func getJobcenterJobId(s string) (string, error) {
