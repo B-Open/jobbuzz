@@ -3,7 +3,6 @@ package scraper
 import (
 	"fmt"
 	"net/http"
-	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/avast/retry-go"
@@ -25,16 +24,10 @@ type (
 	}
 
 	JobCentreScraper struct {
-		wg          sync.WaitGroup
-		jobs        []*model.Job
-		companies   []*model.Company
 		FetchClient FetchClienter
 	}
 
 	BruneidaScraper struct {
-		wg          sync.WaitGroup
-		jobs        []*model.Job
-		companies   []*model.Company
 		FetchClient FetchClienter
 	}
 

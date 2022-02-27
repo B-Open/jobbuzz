@@ -13,25 +13,27 @@ import (
 )
 
 func NewBruneidaScraper() BruneidaScraper {
-	return BruneidaScraper{wg: sync.WaitGroup{}, jobs: []*model.Job{}, FetchClient: &FetchClient{}}
+	return BruneidaScraper{FetchClient: &FetchClient{}}
 }
 
 func (s *BruneidaScraper) ScrapeJobs() ([]*model.Job, error) {
+	var wg sync.WaitGroup
+	var jobs []*model.Job
 	for i := 1; i < 30; i++ {
-		s.wg.Add(1)
+		wg.Add(1)
 		url := fmt.Sprintf("https://www.bruneida.com/brunei/jobs/?&page=%d", i)
 
-		go s.scrapeBruneidaJobsListing(url)
+		go s.scrapeBruneidaJobsListing(&wg, &jobs, url)
 
 	}
 
-	s.wg.Wait()
+	wg.Wait()
 
-	return s.jobs, nil
+	return jobs, nil
 }
 
-func (bruneidaScraper *BruneidaScraper) scrapeBruneidaJobsListing(url string) {
-	defer bruneidaScraper.wg.Done()
+func (bruneidaScraper *BruneidaScraper) scrapeBruneidaJobsListing(wg *sync.WaitGroup, jobs *[]*model.Job, url string) {
+	defer wg.Done()
 
 	links, err := bruneidaScraper.getJobLinks(url)
 	if err != nil {
@@ -40,14 +42,14 @@ func (bruneidaScraper *BruneidaScraper) scrapeBruneidaJobsListing(url string) {
 	}
 
 	for _, link := range links {
-		bruneidaScraper.wg.Add(1)
+		wg.Add(1)
 
-		go bruneidaScraper.scrapeBruneidaJob(link)
+		go bruneidaScraper.scrapeBruneidaJob(wg, jobs, link)
 	}
 }
 
-func (bruneidaScraper *BruneidaScraper) scrapeBruneidaJob(url string) bool {
-	defer bruneidaScraper.wg.Done()
+func (bruneidaScraper *BruneidaScraper) scrapeBruneidaJob(wg *sync.WaitGroup, jobs *[]*model.Job, url string) bool {
+	defer wg.Done()
 	doc, err := bruneidaScraper.FetchClient.GetDocument(url)
 	if err != nil {
 		log.Error().Err(err).Msgf("Fail to scrape url : %s", url)
@@ -88,12 +90,12 @@ func (bruneidaScraper *BruneidaScraper) scrapeBruneidaJob(url string) bool {
 		Provider:      Bruneida,
 		Title:         jobTitle,
 		// Company:       company,
-		Salary:        salary,
-		Location:      location,
-		Description:   *description,
+		Salary:      salary,
+		Location:    location,
+		Description: *description,
 	}
 
-	bruneidaScraper.jobs = append(bruneidaScraper.jobs, &job)
+	*jobs = append(*jobs, &job)
 	return true
 
 }

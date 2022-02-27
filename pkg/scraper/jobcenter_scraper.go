@@ -19,7 +19,7 @@ const (
 )
 
 func NewJobCentreScraper() JobCentreScraper {
-	return JobCentreScraper{wg: sync.WaitGroup{}, jobs: []*model.Job{}, FetchClient: &FetchClient{}}
+	return JobCentreScraper{FetchClient: &FetchClient{}}
 }
 
 func (s *JobCentreScraper) ScrapeJobs() ([]*model.Job, error) {
@@ -28,19 +28,21 @@ func (s *JobCentreScraper) ScrapeJobs() ([]*model.Job, error) {
 		return nil, err
 	}
 
+	var wg sync.WaitGroup
+	var jobs []*model.Job
 	for i := 1; i <= lastPageNo; i++ {
-		s.wg.Add(1)
+		wg.Add(1)
 		url := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d&start=%d", jobcenterUrl, pageSize, i)
-		go s.scrapeJobcenterJobsListing(url)
+		go s.scrapeJobcenterJobsListing(&wg, &jobs, url)
 	}
 
-	s.wg.Wait()
+	wg.Wait()
 
-	return s.jobs, nil
+	return jobs, nil
 }
 
-func (jobcenterScraper *JobCentreScraper) scrapeJobcenterJobsListing(url string) bool {
-	defer jobcenterScraper.wg.Done()
+func (jobcenterScraper *JobCentreScraper) scrapeJobcenterJobsListing(wg *sync.WaitGroup, jobs *[]*model.Job, url string) bool {
+	defer wg.Done()
 
 	doc, err := jobcenterScraper.FetchClient.GetDocument(url)
 	if err != nil {
@@ -49,16 +51,16 @@ func (jobcenterScraper *JobCentreScraper) scrapeJobcenterJobsListing(url string)
 	}
 
 	doc.Find("li.list-group-item.list-group-item-flex").Each(func(i int, s *goquery.Selection) {
-		jobcenterScraper.wg.Add(1)
+		wg.Add(1)
 
-		go jobcenterScraper.scrapeJobcenterJob(s)
+		go jobcenterScraper.scrapeJobcenterJob(wg, jobs, s)
 	})
 
 	return true
 }
 
-func (jobcenterScraper *JobCentreScraper) scrapeJobcenterJob(s *goquery.Selection) bool {
-	defer jobcenterScraper.wg.Done()
+func (jobcenterScraper *JobCentreScraper) scrapeJobcenterJob(wg *sync.WaitGroup, jobs *[]*model.Job, s *goquery.Selection) bool {
+	defer wg.Done()
 	jobTitle := s.Find(".jp_job_post_right_cont h4 a").Text()
 	companyName := s.Find(".jp_job_post_right_cont p a").Text()
 	salary := s.Find(".jp_job_post_right_cont>ul li:first-child").Text()
@@ -110,7 +112,7 @@ func (jobcenterScraper *JobCentreScraper) scrapeJobcenterJob(s *goquery.Selectio
 		Description:   *description,
 		Company:       company,
 	}
-	jobcenterScraper.jobs = append(jobcenterScraper.jobs, &job)
+	*jobs = append(*jobs, &job)
 
 	return true
 

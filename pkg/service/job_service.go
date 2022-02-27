@@ -16,6 +16,11 @@ func (s *Service) GetJobs() ([]*model.Job, error) {
 }
 
 func (s *Service) CreateJobsAndCompanies(jobs []*model.Job) error {
+	// create companies
+
+	// set company id in jobs
+
+	// create jobs
 
 	return nil
 }
