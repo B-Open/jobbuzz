@@ -21,7 +21,7 @@ func (s *Service) CreateJobsAndCompanies(jobs []*model.Job) error {
 }
 
 func (s *Service) CreateJob(job *model.Job) (*model.Job, error) {
-	result := s.DB.FirstOrCreate(&job, model.Job{Provider: job.Provider, ProviderJobID: job.ProviderJobID})
+	result := s.DB.Omit("Company").FirstOrCreate(&job, model.Job{Provider: job.Provider, ProviderJobID: job.ProviderJobID})
 	if err := result.Error; err != nil {
 		return nil, err
 	}
