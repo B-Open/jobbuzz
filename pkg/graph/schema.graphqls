@@ -1,6 +1,4 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
+scalar Time
 
 """
 The input for registering a new user.
@@ -23,8 +21,8 @@ A single job listing item.
 """
 type Job {
   id: Int!
-  createdAt: String!
-  updatedAt: String!
+  createdAt: Time!
+  updatedAt: Time!
   title: String!
   company: String!
   salary: String!
@@ -86,9 +84,10 @@ type JobOutput implements PaginatedOutput {
   total_page: Int!
   total: Int!
   data: [Job!]!
+  error: StandardError
 }
 
-union NewUser = User | GenericError
+union NewUser = User | StandardError
 
 type Query {
   """
