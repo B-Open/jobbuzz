@@ -60,6 +60,7 @@ func (bruneidaScraper *BruneidaScraper) scrapeBruneidaJob(wg *sync.WaitGroup, jo
 	}
 
 	jobTitle := doc.Find("#title-box-inner div.inline-block.pull-left h1").Text()
+	// TODO: need to figure out what to do with Bruneida's company
 	// company := doc.Find("#ad-contact ul li:first-child span.bb b.small").Text()
 	salary := doc.Find("#ad-body-inner .opt .opt-dl:nth-child(3) .dd").Text()
 
