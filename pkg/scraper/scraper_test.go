@@ -1,6 +1,9 @@
 package scraper
 
 import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -32,10 +35,12 @@ func TestGetBruneidaJobId(t *testing.T) {
 }
 
 func TestGetDocument(t *testing.T) {
-	url := "https://github.com"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "OK")
+	}))
 
 	client := FetchClient{}
-	_, err := client.GetDocument(url)
+	_, err := client.GetDocument(server.URL)
 
 	if err != nil {
 		t.Error(err)
