@@ -42,11 +42,12 @@ func main() {
 
 	log.Info().Msg("Fetching jobs from JobCenter")
 	jobCentreScraper := scraper.NewJobCentreScraper()
-	jobs, err := jobCentreScraper.ScrapeJobs()
+	jobs, _, err := jobCentreScraper.ScrapeJobs()
 	if err != nil {
 		log.Error().Err(err).Msg("Fail to scrape jobs from jobcenter")
 	} else {
 		log.Info().Msgf("Found %d jobs", len(jobs))
+		// TODO: save companies
 		for _, job := range jobs {
 			_, err = service.CreateJob(job)
 			if err != nil {

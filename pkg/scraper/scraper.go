@@ -20,6 +20,9 @@ const (
 
 type (
 	Scraper interface {
+		// ScrapeJobs scrapes provider's website for job listings and company information if available.
+		// Returned Job struct contains a Company struct with ProviderCompanyID only.
+		// Company details are returned as a separate argument.
 		ScrapeJobs() ([]*model.Job, error)
 	}
 
