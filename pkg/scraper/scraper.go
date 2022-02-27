@@ -8,7 +8,6 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/b-open/jobbuzz/pkg/model"
 	"github.com/pkg/errors"
-	"github.com/rs/zerolog/log"
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/html"
 )
@@ -44,7 +43,7 @@ type (
 )
 
 func (c *FetchClient) GetDocument(url string) (*goquery.Document, error) {
-	log.Debug().Msgf("Visiting: %s \n", url)
+	// log.Debug().Msgf("Visiting: %s \n", url)
 	var doc *goquery.Document
 
 	err := retry.Do(func() error {

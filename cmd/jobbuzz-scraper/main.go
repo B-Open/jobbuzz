@@ -42,17 +42,15 @@ func main() {
 
 	log.Info().Msg("Fetching jobs from JobCenter")
 	jobCentreScraper := scraper.NewJobCentreScraper()
-	jobs, _, err := jobCentreScraper.ScrapeJobs()
+	jobs, companies, err := jobCentreScraper.ScrapeJobs()
 	if err != nil {
 		log.Error().Err(err).Msg("Fail to scrape jobs from jobcenter")
 	} else {
 		log.Info().Msgf("Found %d jobs", len(jobs))
-		// TODO: save companies
-		for _, job := range jobs {
-			_, err = service.CreateJob(job)
-			if err != nil {
-				log.Error().Err(err).Str("job", fmt.Sprintf("%+v", job))
-			}
+
+		err := service.CreateJobsAndCompanies(jobs, companies)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to add jobs and companies to database")
 		}
 	}
 
@@ -64,12 +62,11 @@ func main() {
 	if err != nil {
 		log.Error().Err(err).Msg("Fail to scrape jobs from Bruneida")
 	} else {
-	log.Info().Msgf("Found %d jobs", len(jobs))
-		for _, job := range jobs {
-			_, err = service.CreateJob(job)
-			if err != nil {
-				log.Error().Err(err).Str("job", fmt.Sprintf("%+v", job))
-			}
+		log.Info().Msgf("Found %d jobs", len(jobs))
+
+		_, err = service.CreateJobs(service.DB, jobs)
+		if err != nil {
+			log.Error().Err(err).Str("job", fmt.Sprintf("%+v", jobs))
 		}
 	}
 }
