@@ -13,7 +13,10 @@ import (
 )
 
 func NewBruneidaScraper() BruneidaScraper {
-	return BruneidaScraper{FetchClient: &FetchClient{}}
+	return BruneidaScraper{
+		BaseURL: "https://www.bruneida.com",
+		FetchClient: &FetchClient{},
+	}
 }
 
 func (s *BruneidaScraper) ScrapeJobs() ([]*model.Job, error) {
@@ -21,7 +24,7 @@ func (s *BruneidaScraper) ScrapeJobs() ([]*model.Job, error) {
 	var jobs []*model.Job
 	for i := 1; i < 30; i++ {
 		wg.Add(1)
-		url := fmt.Sprintf("https://www.bruneida.com/brunei/jobs/?&page=%d", i)
+		url := fmt.Sprintf("%s/brunei/jobs/?&page=%d", s.BaseURL, i)
 
 		go s.scrapeBruneidaJobsListing(&wg, &jobs, url)
 

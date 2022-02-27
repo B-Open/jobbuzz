@@ -14,12 +14,14 @@ import (
 )
 
 const (
-	pageSize     = 200
-	jobcenterUrl = "https://www.jobcentrebrunei.gov.bn"
+	pageSize = 200
 )
 
 func NewJobCentreScraper() JobCentreScraper {
-	return JobCentreScraper{FetchClient: &FetchClient{}}
+	return JobCentreScraper{
+		BaseURL:     "https://www.jobcentrebrunei.gov.bn",
+		FetchClient: &FetchClient{},
+	}
 }
 
 func (s *JobCentreScraper) ScrapeJobs() ([]*model.Job, map[string]*model.Company, error) {
@@ -49,7 +51,7 @@ func (s *JobCentreScraper) scrapeJobAndCompanies(maxPage int) ([]*model.Job, map
 
 		go func(page int) {
 			defer wg.Done()
-			url := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d&start=%d", jobcenterUrl, pageSize, page)
+			url := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d&start=%d", s.BaseURL, pageSize, page)
 
 			doc, err := s.FetchClient.GetDocument(url)
 			if err != nil {
@@ -122,7 +124,7 @@ func (s *JobCentreScraper) scrapeJobDetails(jobs []*model.Job) []*model.Job {
 
 		go func(job *model.Job) {
 			defer wg.Done()
-			doc, err := s.FetchClient.GetDocument(job.Link)
+			doc, err := s.FetchClient.GetDocument(s.BaseURL + job.Link)
 			if err != nil {
 				log.Error().Err(err).Msgf("Fail to scrape url : %s", job.Link)
 				return
@@ -174,7 +176,7 @@ func getJobcenterId(url, idType1, idType2 string) (string, error) {
 
 func (s *JobCentreScraper) scrapeJobcenterLastPageNumber() (int, error) {
 
-	urlString := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d&start=%d", jobcenterUrl, pageSize, 1)
+	urlString := fmt.Sprintf("%s/web/guest/search-job?q=&delta=%d&start=%d", s.BaseURL, pageSize, 1)
 
 	doc, err := s.FetchClient.GetDocument(urlString)
 

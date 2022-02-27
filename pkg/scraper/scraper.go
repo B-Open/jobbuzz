@@ -27,10 +27,12 @@ type (
 	}
 
 	JobCentreScraper struct {
+		BaseURL     string
 		FetchClient FetchClienter
 	}
 
 	BruneidaScraper struct {
+		BaseURL     string
 		FetchClient FetchClienter
 	}
 
