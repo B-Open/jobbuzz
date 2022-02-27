@@ -34,7 +34,8 @@ func TestGetBruneidaJobId(t *testing.T) {
 func TestGetDocument(t *testing.T) {
 	url := "https://github.com"
 
-	_, err := getDocument(url)
+	client := FetchClient{}
+	_, err := client.GetDocument(url)
 
 	if err != nil {
 		t.Error(err)
