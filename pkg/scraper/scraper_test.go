@@ -26,12 +26,11 @@ func TestGetJobcenterCompanyId(t *testing.T) {
 }
 
 func TestGetBruneidaJobId(t *testing.T) {
+	want := "106679"
+	got, err := getBruneidaJobId("https://www.bruneida.com/SHOP-ASSISTANTS-106679")
 
-	jobId, _ := getBruneidaJobId("https://www.bruneida.com/SHOP-ASSISTANTS-106679")
-
-	if jobId != "106679" {
-		t.Errorf("Expected %s but got %s", "expected", "got")
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, want, got)
 }
 
 func TestGetDocument(t *testing.T) {
@@ -40,10 +39,8 @@ func TestGetDocument(t *testing.T) {
 	}))
 
 	client := FetchClient{}
-	_, err := client.GetDocument(server.URL)
+	got, err := client.GetDocument(server.URL)
 
-	if err != nil {
-		t.Error(err)
-	}
-
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
 }
