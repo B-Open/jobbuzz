@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/b-open/jobbuzz/pkg/graph/graphmodel"
 	"github.com/b-open/jobbuzz/pkg/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -38,13 +39,13 @@ func TestJobs(t *testing.T) {
 
 		r := Resolver{Service: &mockService}
 
-		result, err := r.Query().Jobs(nil)
+		result, err := r.Query().Jobs(nil, nil, graphmodel.PaginationInput{})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		assert.NotEmpty(t, result, "Jobs should not be empty")
-		assert.Len(t, result, 1)
+		assert.NotEmpty(t, result.Data, "Jobs should not be empty")
+		assert.Len(t, result.Data, 1)
 	})
 
 	t.Run("test return 20 jobs", func(t *testing.T) {
@@ -62,13 +63,13 @@ func TestJobs(t *testing.T) {
 
 		r := Resolver{Service: &mockService}
 
-		result, err := r.Query().Jobs(nil)
+		result, err := r.Query().Jobs(nil, nil, graphmodel.PaginationInput{})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		assert.NotEmpty(t, result, "Jobs should not be empty")
-		assert.Len(t, result, 20, "Jobs length is not correct")
+		assert.NotEmpty(t, result.Data, "Jobs should not be empty")
+		assert.Len(t, result.Data, 20, "Jobs length is not correct")
 	})
 
 	t.Run("test return no jobs", func(t *testing.T) {
@@ -77,12 +78,12 @@ func TestJobs(t *testing.T) {
 
 		r := Resolver{Service: &mockService}
 
-		result, err := r.Query().Jobs(nil)
+		result, err := r.Query().Jobs(nil, nil, graphmodel.PaginationInput{})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		assert.Empty(t, result, "Jobs should be empty")
+		assert.Empty(t, result.Data, "Jobs should be empty")
 	})
 
 	t.Run("test error", func(t *testing.T) {
@@ -91,7 +92,7 @@ func TestJobs(t *testing.T) {
 
 		r := Resolver{Service: &mockService}
 
-		_, err := r.Query().Jobs(nil)
+		_, err := r.Query().Jobs(nil, nil, graphmodel.PaginationInput{})
 		assert.NotNil(t, err, "Error was expected but not found.")
 	})
 }
