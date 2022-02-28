@@ -29,6 +29,16 @@ type Job {
   location: String!
 }
 
+"""
+A single company item.
+"""
+type Company {
+  id: Int!
+  createdAt: String!
+  updatedAt: String!
+  name: String!
+}
+
 input StringFilterInput {
   """
   Standard String Type Filters
@@ -87,6 +97,20 @@ type JobOutput implements PaginatedOutput {
   error: StandardError
 }
 
+type CompanyOutput implements PaginatedOutput {
+  """
+  Company output in Paginated Format
+  """
+  to: Int!
+  from: Int!
+  per_page: Int!
+  current_page: Int!
+  total_page: Int!
+  total: Int!
+  data: [Company!]!
+  error: StandardError
+}
+
 union NewUser = User | StandardError
 
 type Query {
@@ -94,6 +118,10 @@ type Query {
   Get all jobs.
   """
   jobs(search: StringFilterInput, pagination: PaginationInput!): JobOutput!
+  """
+  Get all companies.
+  """
+  companies(search: StringFilterInput, pagination: PaginationInput!): CompanyOutput!
 }
 
 type Mutation {

@@ -1,14 +1,14 @@
 package scraper
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
-	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/avast/retry-go"
 	"github.com/b-open/jobbuzz/pkg/model"
+	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/html"
 )
@@ -18,24 +18,39 @@ const (
 	Bruneida  = 2
 )
 
-type scraper struct {
-	wg   sync.WaitGroup
-	jobs []*model.Job
-}
+type (
+	Scraper interface {
+		// ScrapeJobs scrapes provider's website for job listings and company information if available.
+		// Returned Job struct contains a Company struct with ProviderCompanyID only.
+		// Company details are returned as a separate argument.
+		ScrapeJobs() ([]*model.Job, error)
+	}
 
-func createScraper() scraper {
-	return scraper{wg: sync.WaitGroup{}, jobs: []*model.Job{}}
-}
+	JobCentreScraper struct {
+		BaseURL     string
+		FetchClient FetchClienter
+	}
 
-func getDocument(url string) (*goquery.Document, error) {
-	fmt.Printf("Visiting: %s \n", url)
+	BruneidaScraper struct {
+		BaseURL     string
+		FetchClient FetchClienter
+	}
+
+	FetchClienter interface {
+		GetDocument(url string) (*goquery.Document, error)
+	}
+
+	FetchClient struct{}
+)
+
+func (c *FetchClient) GetDocument(url string) (*goquery.Document, error) {
+	log.Debug().Msgf("Visiting: %s \n", url)
 	var doc *goquery.Document
 
 	err := retry.Do(func() error {
-
 		res, err := http.Get(url)
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "Error in HTTP GET")
 		}
 
 		defer res.Body.Close()
@@ -43,21 +58,18 @@ func getDocument(url string) (*goquery.Document, error) {
 		if res.StatusCode != http.StatusOK {
 			errorMessage := fmt.Sprintf("status code error: %d %s", res.StatusCode, res.Status)
 
-			fmt.Println(errorMessage)
-
-			return errors.New(errorMessage)
+			return fmt.Errorf("Status is not 200 OK: %s", errorMessage)
 		}
 
 		doc, err = goquery.NewDocumentFromReader(res.Body)
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "Error creating goquery document")
 		}
 
 		return nil
 	})
-
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "Error in retry")
 	}
 
 	return doc, nil

@@ -5,58 +5,68 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/pkg/model"
+	"github.com/rs/zerolog/log"
 )
 
-func ScrapeBruneida() ([]*model.Job, error) {
+func NewBruneidaScraper() BruneidaScraper {
+	return BruneidaScraper{
+		BaseURL: "https://www.bruneida.com",
+		FetchClient: &FetchClient{},
+	}
+}
 
-	bruneidaScraper := createScraper()
-
+func (s *BruneidaScraper) ScrapeJobs() ([]*model.Job, error) {
+	var wg sync.WaitGroup
+	var jobs []*model.Job
 	for i := 1; i < 30; i++ {
-		bruneidaScraper.wg.Add(1)
-		url := fmt.Sprintf("https://www.bruneida.com/brunei/jobs/?&page=%d", i)
+		wg.Add(1)
+		url := fmt.Sprintf("%s/brunei/jobs/?&page=%d", s.BaseURL, i)
 
-		go (&bruneidaScraper).scrapeBruneidaJobsListing(url)
+		go s.scrapeBruneidaJobsListing(&wg, &jobs, url)
 
 	}
 
-	bruneidaScraper.wg.Wait()
+	wg.Wait()
 
-	return bruneidaScraper.jobs, nil
+	return jobs, nil
 }
 
-func (bruneidaScraper *scraper) scrapeBruneidaJobsListing(url string) {
-	defer bruneidaScraper.wg.Done()
+func (bruneidaScraper *BruneidaScraper) scrapeBruneidaJobsListing(wg *sync.WaitGroup, jobs *[]*model.Job, url string) {
+	defer wg.Done()
 
-	links, err := getJobLinks(url)
+	links, err := bruneidaScraper.getJobLinks(url)
 	if err != nil {
-		fmt.Printf("Fail to scrape url : %s, err: %s \n", url, err)
+		log.Error().Err(err).Msgf("Fail to scrape url : %s", url)
+		return
 	}
 
 	for _, link := range links {
-		bruneidaScraper.wg.Add(1)
+		wg.Add(1)
 
-		go bruneidaScraper.scrapeBruneidaJob(link)
+		go bruneidaScraper.scrapeBruneidaJob(wg, jobs, link)
 	}
 }
 
-func (bruneidaScraper *scraper) scrapeBruneidaJob(url string) bool {
-	defer bruneidaScraper.wg.Done()
-	doc, err := getDocument(url)
+func (bruneidaScraper *BruneidaScraper) scrapeBruneidaJob(wg *sync.WaitGroup, jobs *[]*model.Job, url string) bool {
+	defer wg.Done()
+	doc, err := bruneidaScraper.FetchClient.GetDocument(url)
 	if err != nil {
-		fmt.Printf("Fail to scrape url : %s, err: %s \n", url, err)
+		log.Error().Err(err).Msgf("Fail to scrape url : %s", url)
 		return false
 	}
 
 	jobTitle := doc.Find("#title-box-inner div.inline-block.pull-left h1").Text()
-	company := doc.Find("#ad-contact ul li:first-child span.bb b.small").Text()
+	// TODO: need to figure out what to do with Bruneida's company
+	// company := doc.Find("#ad-contact ul li:first-child span.bb b.small").Text()
 	salary := doc.Find("#ad-body-inner .opt .opt-dl:nth-child(3) .dd").Text()
 
 	description, err := minifyHtml(doc.Find("#full-description").Text())
 	if err != nil {
-		fmt.Printf("Fail to get description : %s, err: %s \n", url, err)
+		log.Error().Err(err).Msgf("Fail to get description : %s", url)
 		return false
 	}
 
@@ -75,30 +85,30 @@ func (bruneidaScraper *scraper) scrapeBruneidaJob(url string) bool {
 
 	providerJobId, err := getBruneidaJobId(url)
 	if err != nil {
-		fmt.Printf("Fail to get job provider id : %s, err: %s \n", url, err)
+		log.Error().Err(err).Msgf("Fail to get job provider id : %s", url)
 		return false
 	}
 
 	job := model.Job{
-		ProviderJobId: providerJobId,
+		ProviderJobID: providerJobId,
 		Provider:      Bruneida,
 		Title:         jobTitle,
-		Company:       company,
-		Salary:        salary,
-		Location:      location,
-		Description:   *description,
+		// Company:       company,
+		Salary:      salary,
+		Location:    location,
+		Description: *description,
 	}
 
-	bruneidaScraper.jobs = append(bruneidaScraper.jobs, &job)
+	*jobs = append(*jobs, &job)
 	return true
 
 }
 
-func getJobLinks(url string) ([]string, error) {
+func (s *BruneidaScraper) getJobLinks(url string) ([]string, error) {
 
 	links := []string{}
 
-	doc, err := getDocument(url)
+	doc, err := s.FetchClient.GetDocument(url)
 	if err != nil {
 		return nil, err
 	}

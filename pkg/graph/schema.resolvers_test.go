@@ -54,7 +54,7 @@ func TestJobs(t *testing.T) {
 		for i := 0; i < 20; i++ {
 			mockJobs = append(mockJobs, &model.Job{
 				BaseModel: model.BaseModel{
-					ID: uint(i),
+					ID: uint64(i),
 				},
 				Title: "test job",
 			})
