@@ -2,9 +2,6 @@ package scraper
 
 import (
 	"bufio"
-	"io"
-	"net/http"
-	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
@@ -41,28 +38,28 @@ func TestScrapeJobs(t *testing.T) {
 	scraper := NewJobCentreScraper()
 	scraper.FetchClient = mockClient
 
-	_, _, err = scraper.ScrapeJobs()
+	jobs, companies, err := scraper.ScrapeJobs()
 
 	assert.Nil(t, err, "Error is not nil")
+	assert.Empty(t, jobs)
+	assert.Empty(t, companies)
 }
 
 func TestScrapeCompanyDetails(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		f, err := os.Open("../../testdata/jobcentre_company_605802.html")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		reader := bufio.NewReader(f)
-		_, err = io.Copy(w, reader)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}))
-	defer server.Close()
+	mockClient := &MockFetchClient{}
+	f, err := os.Open("../../testdata/jobcentre_company_605802.html")
+	if err != nil {
+		t.Fatal(err)
+	}
+	reader := bufio.NewReader(f)
+	doc, err := goquery.NewDocumentFromReader(reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mockClient.On("GetDocument", "https://www.jobcentrebrunei.gov.bn/web/guest/view-employer/-/employer/605802").Return(doc, nil)
 
 	scraper := NewJobCentreScraper()
-	scraper.BaseURL = server.URL
+	scraper.FetchClient = mockClient
 
 	testID := "605802"
 	company := &model.Company{
