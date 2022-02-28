@@ -18,6 +18,28 @@ type PaginatedOutput interface {
 	IsPaginatedOutput()
 }
 
+// A single company item.
+type Company struct {
+	ID        int    `json:"id"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+	Name      string `json:"name"`
+}
+
+type CompanyOutput struct {
+	// Company output in Paginated Format
+	To          int            `json:"to"`
+	From        int            `json:"from"`
+	PerPage     int            `json:"per_page"`
+	CurrentPage int            `json:"current_page"`
+	TotalPage   int            `json:"total_page"`
+	Total       int            `json:"total"`
+	Data        []*Company     `json:"data"`
+	Error       *StandardError `json:"error"`
+}
+
+func (CompanyOutput) IsPaginatedOutput() {}
+
 // A single job listing item.
 type Job struct {
 	ID        int       `json:"id"`

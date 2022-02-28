@@ -67,7 +67,6 @@ require (
 require (
 	github.com/99designs/gqlgen v0.16.0
 	github.com/PuerkitoBio/goquery v1.8.0
-	github.com/go-playground/validator/v10 v10.10.0 // indirect
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20220208050332-20e1d8d225ab // indirect
 	golang.org/x/sys v0.0.0-20220204135822-1c1b9b1eba6a // indirect

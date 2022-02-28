@@ -45,6 +45,24 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Company struct {
+		CreatedAt func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Name      func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
+	}
+
+	CompanyOutput struct {
+		CurrentPage func(childComplexity int) int
+		Data        func(childComplexity int) int
+		Error       func(childComplexity int) int
+		From        func(childComplexity int) int
+		PerPage     func(childComplexity int) int
+		To          func(childComplexity int) int
+		Total       func(childComplexity int) int
+		TotalPage   func(childComplexity int) int
+	}
+
 	Job struct {
 		Company   func(childComplexity int) int
 		CreatedAt func(childComplexity int) int
@@ -71,7 +89,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Jobs func(childComplexity int, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) int
+		Companies func(childComplexity int, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) int
+		Jobs      func(childComplexity int, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) int
 	}
 
 	StandardError struct {
@@ -89,6 +108,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Jobs(ctx context.Context, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) (*graphmodel.JobOutput, error)
+	Companies(ctx context.Context, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) (*graphmodel.CompanyOutput, error)
 }
 
 type executableSchema struct {
@@ -105,6 +125,90 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Company.createdAt":
+		if e.complexity.Company.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Company.CreatedAt(childComplexity), true
+
+	case "Company.id":
+		if e.complexity.Company.ID == nil {
+			break
+		}
+
+		return e.complexity.Company.ID(childComplexity), true
+
+	case "Company.name":
+		if e.complexity.Company.Name == nil {
+			break
+		}
+
+		return e.complexity.Company.Name(childComplexity), true
+
+	case "Company.updatedAt":
+		if e.complexity.Company.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Company.UpdatedAt(childComplexity), true
+
+	case "CompanyOutput.current_page":
+		if e.complexity.CompanyOutput.CurrentPage == nil {
+			break
+		}
+
+		return e.complexity.CompanyOutput.CurrentPage(childComplexity), true
+
+	case "CompanyOutput.data":
+		if e.complexity.CompanyOutput.Data == nil {
+			break
+		}
+
+		return e.complexity.CompanyOutput.Data(childComplexity), true
+
+	case "CompanyOutput.error":
+		if e.complexity.CompanyOutput.Error == nil {
+			break
+		}
+
+		return e.complexity.CompanyOutput.Error(childComplexity), true
+
+	case "CompanyOutput.from":
+		if e.complexity.CompanyOutput.From == nil {
+			break
+		}
+
+		return e.complexity.CompanyOutput.From(childComplexity), true
+
+	case "CompanyOutput.per_page":
+		if e.complexity.CompanyOutput.PerPage == nil {
+			break
+		}
+
+		return e.complexity.CompanyOutput.PerPage(childComplexity), true
+
+	case "CompanyOutput.to":
+		if e.complexity.CompanyOutput.To == nil {
+			break
+		}
+
+		return e.complexity.CompanyOutput.To(childComplexity), true
+
+	case "CompanyOutput.total":
+		if e.complexity.CompanyOutput.Total == nil {
+			break
+		}
+
+		return e.complexity.CompanyOutput.Total(childComplexity), true
+
+	case "CompanyOutput.total_page":
+		if e.complexity.CompanyOutput.TotalPage == nil {
+			break
+		}
+
+		return e.complexity.CompanyOutput.TotalPage(childComplexity), true
 
 	case "Job.company":
 		if e.complexity.Job.Company == nil {
@@ -222,6 +326,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.RegisterAccount(childComplexity, args["input"].(graphmodel.NewUserInput)), true
+
+	case "Query.companies":
+		if e.complexity.Query.Companies == nil {
+			break
+		}
+
+		args, err := ec.field_Query_companies_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Companies(childComplexity, args["search"].(*graphmodel.StringFilterInput), args["pagination"].(graphmodel.PaginationInput)), true
 
 	case "Query.jobs":
 		if e.complexity.Query.Jobs == nil {
@@ -351,6 +467,16 @@ type Job {
   location: String!
 }
 
+"""
+A single company item.
+"""
+type Company {
+  id: Int!
+  createdAt: String!
+  updatedAt: String!
+  name: String!
+}
+
 input StringFilterInput {
   """
   Standard String Type Filters
@@ -409,6 +535,20 @@ type JobOutput implements PaginatedOutput {
   error: StandardError
 }
 
+type CompanyOutput implements PaginatedOutput {
+  """
+  Company output in Paginated Format
+  """
+  to: Int!
+  from: Int!
+  per_page: Int!
+  current_page: Int!
+  total_page: Int!
+  total: Int!
+  data: [Company!]!
+  error: StandardError
+}
+
 union NewUser = User | StandardError
 
 type Query {
@@ -416,6 +556,10 @@ type Query {
   Get all jobs.
   """
   jobs(search: StringFilterInput, pagination: PaginationInput!): JobOutput!
+  """
+  Get all companies.
+  """
+  companies(search: StringFilterInput, pagination: PaginationInput!): CompanyOutput!
 }
 
 type Mutation {
@@ -459,6 +603,30 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_companies_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *graphmodel.StringFilterInput
+	if tmp, ok := rawArgs["search"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("search"))
+		arg0, err = ec.unmarshalOStringFilterInput2ᚖgithubᚗcomᚋbᚑopenᚋjobbuzzᚋpkgᚋgraphᚋgraphmodelᚐStringFilterInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["search"] = arg0
+	var arg1 graphmodel.PaginationInput
+	if tmp, ok := rawArgs["pagination"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
+		arg1, err = ec.unmarshalNPaginationInput2githubᚗcomᚋbᚑopenᚋjobbuzzᚋpkgᚋgraphᚋgraphmodelᚐPaginationInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["pagination"] = arg1
 	return args, nil
 }
 
@@ -523,6 +691,423 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _Company_id(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Company) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Company",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Company_createdAt(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Company) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Company",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Company_updatedAt(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Company) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Company",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Company_name(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Company) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Company",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CompanyOutput_to(ctx context.Context, field graphql.CollectedField, obj *graphmodel.CompanyOutput) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CompanyOutput",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.To, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CompanyOutput_from(ctx context.Context, field graphql.CollectedField, obj *graphmodel.CompanyOutput) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CompanyOutput",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.From, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CompanyOutput_per_page(ctx context.Context, field graphql.CollectedField, obj *graphmodel.CompanyOutput) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CompanyOutput",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PerPage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CompanyOutput_current_page(ctx context.Context, field graphql.CollectedField, obj *graphmodel.CompanyOutput) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CompanyOutput",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CurrentPage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CompanyOutput_total_page(ctx context.Context, field graphql.CollectedField, obj *graphmodel.CompanyOutput) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CompanyOutput",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalPage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CompanyOutput_total(ctx context.Context, field graphql.CollectedField, obj *graphmodel.CompanyOutput) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CompanyOutput",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CompanyOutput_data(ctx context.Context, field graphql.CollectedField, obj *graphmodel.CompanyOutput) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CompanyOutput",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*graphmodel.Company)
+	fc.Result = res
+	return ec.marshalNCompany2ᚕᚖgithubᚗcomᚋbᚑopenᚋjobbuzzᚋpkgᚋgraphᚋgraphmodelᚐCompanyᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CompanyOutput_error(ctx context.Context, field graphql.CollectedField, obj *graphmodel.CompanyOutput) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CompanyOutput",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Error, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*graphmodel.StandardError)
+	fc.Result = res
+	return ec.marshalOStandardError2ᚖgithubᚗcomᚋbᚑopenᚋjobbuzzᚋpkgᚋgraphᚋgraphmodelᚐStandardError(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _Job_id(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Job) (ret graphql.Marshaler) {
 	defer func() {
@@ -1128,6 +1713,48 @@ func (ec *executionContext) _Query_jobs(ctx context.Context, field graphql.Colle
 	res := resTmp.(*graphmodel.JobOutput)
 	fc.Result = res
 	return ec.marshalNJobOutput2ᚖgithubᚗcomᚋbᚑopenᚋjobbuzzᚋpkgᚋgraphᚋgraphmodelᚐJobOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_companies(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_companies_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Companies(rctx, args["search"].(*graphmodel.StringFilterInput), args["pagination"].(graphmodel.PaginationInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*graphmodel.CompanyOutput)
+	fc.Result = res
+	return ec.marshalNCompanyOutput2ᚖgithubᚗcomᚋbᚑopenᚋjobbuzzᚋpkgᚋgraphᚋgraphmodelᚐCompanyOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2590,6 +3217,13 @@ func (ec *executionContext) _PaginatedOutput(ctx context.Context, sel ast.Select
 			return graphql.Null
 		}
 		return ec._JobOutput(ctx, sel, obj)
+	case graphmodel.CompanyOutput:
+		return ec._CompanyOutput(ctx, sel, &obj)
+	case *graphmodel.CompanyOutput:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._CompanyOutput(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -2598,6 +3232,165 @@ func (ec *executionContext) _PaginatedOutput(ctx context.Context, sel ast.Select
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var companyImplementors = []string{"Company"}
+
+func (ec *executionContext) _Company(ctx context.Context, sel ast.SelectionSet, obj *graphmodel.Company) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, companyImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Company")
+		case "id":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Company_id(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createdAt":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Company_createdAt(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updatedAt":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Company_updatedAt(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Company_name(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var companyOutputImplementors = []string{"CompanyOutput", "PaginatedOutput"}
+
+func (ec *executionContext) _CompanyOutput(ctx context.Context, sel ast.SelectionSet, obj *graphmodel.CompanyOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, companyOutputImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CompanyOutput")
+		case "to":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._CompanyOutput_to(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "from":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._CompanyOutput_from(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "per_page":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._CompanyOutput_per_page(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "current_page":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._CompanyOutput_current_page(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "total_page":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._CompanyOutput_total_page(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "total":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._CompanyOutput_total(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "data":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._CompanyOutput_data(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "error":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._CompanyOutput_error(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
 
 var jobImplementors = []string{"Job"}
 
@@ -2857,6 +3650,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_jobs(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "companies":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_companies(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -3389,6 +4205,74 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNCompany2ᚕᚖgithubᚗcomᚋbᚑopenᚋjobbuzzᚋpkgᚋgraphᚋgraphmodelᚐCompanyᚄ(ctx context.Context, sel ast.SelectionSet, v []*graphmodel.Company) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNCompany2ᚖgithubᚗcomᚋbᚑopenᚋjobbuzzᚋpkgᚋgraphᚋgraphmodelᚐCompany(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNCompany2ᚖgithubᚗcomᚋbᚑopenᚋjobbuzzᚋpkgᚋgraphᚋgraphmodelᚐCompany(ctx context.Context, sel ast.SelectionSet, v *graphmodel.Company) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Company(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNCompanyOutput2githubᚗcomᚋbᚑopenᚋjobbuzzᚋpkgᚋgraphᚋgraphmodelᚐCompanyOutput(ctx context.Context, sel ast.SelectionSet, v graphmodel.CompanyOutput) graphql.Marshaler {
+	return ec._CompanyOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCompanyOutput2ᚖgithubᚗcomᚋbᚑopenᚋjobbuzzᚋpkgᚋgraphᚋgraphmodelᚐCompanyOutput(ctx context.Context, sel ast.SelectionSet, v *graphmodel.CompanyOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._CompanyOutput(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
