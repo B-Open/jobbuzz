@@ -2,27 +2,46 @@ package scraper
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/b-open/jobbuzz/pkg/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
+type MockFetchClient struct {
+	mock.Mock
+}
+
+func (c *MockFetchClient) GetDocument(url string) (*goquery.Document, error) {
+	args := c.Called(url)
+
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).(*goquery.Document), args.Error(1)
+}
+
 func TestScrapeJobs(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, `<ul class="pagination"><li class="page-item"><a href=""><span>Page</span>1</a></li><li class="page-item"></li></ul>`)
-	}))
-	defer server.Close()
+	mockClient := &MockFetchClient{}
+	pageHtml := `<ul class="pagination"><li class="page-item"><a href=""><span>Page</span>1</a></li><li class="page-item"></li></ul>`
+	pageDoc, err := goquery.NewDocumentFromReader(strings.NewReader(pageHtml))
+	if err != nil {
+		t.Fatal(err)
+	}
+	mockClient.On("GetDocument", "https://www.jobcentrebrunei.gov.bn/web/guest/search-job?q=&delta=200&start=1").Return(pageDoc, nil)
 
 	scraper := NewJobCentreScraper()
-	scraper.BaseURL = server.URL
+	scraper.FetchClient = mockClient
 
-	_, _, err := scraper.ScrapeJobs()
+	_, _, err = scraper.ScrapeJobs()
 
 	assert.Nil(t, err, "Error is not nil")
 }
