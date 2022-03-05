@@ -1,6 +1,20 @@
 version: '3.8'
 
 services:
+  api:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - 8080:8080
+    entrypoint:
+      - /app/jobbuzz-api
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
 
   db:
     image: 'mysql:8.0'
@@ -26,4 +40,3 @@ services:
     ports:
       - 1025:1025
       - 8025:8025
-
