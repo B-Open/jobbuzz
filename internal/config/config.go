@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -57,7 +56,6 @@ func loadDbConfig(path string) (*DbConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Debug().Msgf("%+v", dbConfig)
 
 	return &dbConfig, nil
 }
