@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -23,8 +24,11 @@ func LoadConfig(path string) (*Configuration, error) {
 	viper.AddConfigPath(path)
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
-	viper.SetEnvPrefix("jobbuzz")
-	viper.AutomaticEnv()
+	viper.BindEnv("DB_HOST")
+	viper.BindEnv("DB_PORT")
+	viper.BindEnv("DB_USERNAME")
+	viper.BindEnv("DB_PASSWORD")
+	viper.BindEnv("DB_DATABASE")
 
 	// load the db configuration
 	dbConfig, err := loadDbConfig(path)
@@ -53,6 +57,7 @@ func loadDbConfig(path string) (*DbConfig, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Debug().Msgf("%+v", dbConfig)
 
 	return &dbConfig, nil
 }
