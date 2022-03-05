@@ -23,6 +23,7 @@ func LoadConfig(path string) (*Configuration, error) {
 	viper.AddConfigPath(path)
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
+	viper.SetEnvPrefix("jobbuzz")
 	viper.AutomaticEnv()
 
 	// load the db configuration
@@ -41,7 +42,9 @@ func loadDbConfig(path string) (*DbConfig, error) {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		return nil, err
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return nil, err
+		}
 	}
 
 	var dbConfig DbConfig
