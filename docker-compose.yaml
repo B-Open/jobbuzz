@@ -1,14 +1,43 @@
-version: '3.8'
+version: '3.9'
 
 services:
   api:
     build: .
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - 8080:8080
     entrypoint:
       - /app/jobbuzz-api
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+  scraper:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint:
+      - /app/jobbuzz-scraper
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+  migrate:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint:
+      - /app/db-migrator
     environment:
       DB_HOST: db
       DB_PORT: 3306
@@ -25,11 +54,16 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 20
 
   adminer:
     image: adminer
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - 8090:8080
 
