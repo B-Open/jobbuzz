@@ -15,10 +15,20 @@ Brunei open source job search database and alert notification
 
 ### Running locally
 
+#### Natively
+
 1. Copy the `.env.example` file in the repository root to `.env`.
 2. Update the contents of `.env` with your database access details.
 3. Change working directory to `cmd/jobbuzz-api` and run `go run .` to start the API server.
 4. Change working directory to `cmd/jobbuzz-scraper` and run `go run .` to start the web scraper program.
+
+#### Docker
+
+1. Copy the `.env.example` file in the repository root to `.env`.
+2. Update the contents of `.env` with your database access details.
+3. Run `docker-compose up`.
+4. You may need to wait for a while for the scraper to run and complete.
+5. The API server can be accessed at http://localhost:8080
 
 ## Contributing
 
