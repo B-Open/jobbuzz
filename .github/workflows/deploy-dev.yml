@@ -9,6 +9,7 @@ on:
 
 jobs:
   build:
+    environment: Dev Server
     runs-on: ubuntu-latest
     
     steps:
