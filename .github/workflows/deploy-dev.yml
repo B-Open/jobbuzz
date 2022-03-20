@@ -31,7 +31,7 @@ jobs:
           SSH_HOST: ${{ secrets.DEV_SSH_HOST }}
           
       - name: Build binaries
-        run: ssh dev 'cd /opt/jobbuzz/ && go build -o ./bin/ ./... && chown www-data:www-data ./bin/*'
+        run: ssh dev 'cd /opt/jobbuzz/ && /usr/local/go/bin/go build -o ./bin/ ./... && chown www-data:www-data ./bin/*'
           
       - name: Run database migration
         run: ssh dev 'cd /opt/jobbuzz/cmd/db-migrator && /opt/jobbuzz/bin/db-migrator'
