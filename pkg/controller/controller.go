@@ -1,11 +1,13 @@
 package controller
 
 import (
+	"net/http"
+
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/b-open/jobbuzz/pkg/graph"
 	"github.com/b-open/jobbuzz/pkg/graph/generated"
-	"net/http"
+	"github.com/b-open/jobbuzz/pkg/graph/graphmodel"
 
 	"github.com/b-open/jobbuzz/pkg/service"
 	"github.com/gin-gonic/gin"
@@ -23,11 +25,11 @@ func Ping(c *gin.Context) {
 }
 
 func (controller *Controller) GetJobs(c *gin.Context) {
-	jobs, err := controller.Service.GetJobs()
+	jobs, err := controller.Service.GetJobs(graphmodel.PaginationInput{})
 	if err != nil {
 		panic(err)
 	}
-  
+
 	log.Debug().Msgf("Found %d jobs", len(jobs))
 
 	c.JSON(http.StatusOK, gin.H{
@@ -55,4 +57,3 @@ func PlaygroundHandler() gin.HandlerFunc {
 		h.ServeHTTP(c.Writer, c.Request)
 	}
 }
-
