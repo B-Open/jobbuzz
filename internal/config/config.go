@@ -23,7 +23,11 @@ func LoadConfig(path string) (*Configuration, error) {
 	viper.AddConfigPath(path)
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
-	viper.AutomaticEnv()
+	viper.BindEnv("DB_HOST")
+	viper.BindEnv("DB_PORT")
+	viper.BindEnv("DB_USERNAME")
+	viper.BindEnv("DB_PASSWORD")
+	viper.BindEnv("DB_DATABASE")
 
 	// load the db configuration
 	dbConfig, err := loadDbConfig(path)
@@ -41,7 +45,9 @@ func loadDbConfig(path string) (*DbConfig, error) {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		return nil, err
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return nil, err
+		}
 	}
 
 	var dbConfig DbConfig

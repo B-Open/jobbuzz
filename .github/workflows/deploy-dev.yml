@@ -1,0 +1,40 @@
+name: Deploy dev
+
+on:
+  push:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    environment: Dev Server
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          cat >>~/.ssh/config <<END
+          Host dev
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/id_ed25519
+            StrictHostKeyChecking no
+          END
+        env:
+          SSH_USER: ${{ secrets.DEV_SSH_USER }}
+          SSH_KEY: ${{ secrets.DEV_SSH_KEY }}
+          SSH_HOST: ${{ secrets.DEV_SSH_HOST }}
+          
+      - name: Build binaries
+        run: ssh dev 'cd /opt/jobbuzz/ && /usr/local/go/bin/go build -o ./bin/ ./...'
+          
+      - name: Run database migration
+        run: ssh dev 'cd /opt/jobbuzz/cmd/db-migrator && /opt/jobbuzz/bin/db-migrator'
+        
+      - name: Restart API service
+        run: ssh dev 'sudo /usr/bin/systemctl restart jobbuzz-api'

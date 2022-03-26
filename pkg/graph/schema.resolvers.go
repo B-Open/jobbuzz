@@ -13,24 +13,31 @@ import (
 	werrors "github.com/pkg/errors"
 )
 
-func (r *mutationResolver) RegisterAccount(ctx context.Context, input graphmodel.NewUser) (*graphmodel.User, error) {
+func (r *mutationResolver) RegisterAccount(ctx context.Context, input graphmodel.NewUserInput) (graphmodel.NewUser, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Jobs(ctx context.Context) ([]*graphmodel.Job, error) {
+func (r *queryResolver) Jobs(ctx context.Context, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) (*graphmodel.JobOutput, error) {
 	jobs, err := r.Service.GetJobs()
 	if err != nil {
 		return nil, werrors.Wrapf(err, "Error in GetJobs")
 	}
 
-	// TODO: fix datetime not working
 	var graphqlJobs []*graphmodel.Job
 	err = copier.Copy(&graphqlJobs, &jobs)
 	if err != nil {
 		return nil, werrors.Wrapf(err, "Error copying structs")
 	}
 
-	return graphqlJobs, nil
+	output := &graphmodel.JobOutput{
+		Data: graphqlJobs,
+	}
+
+	return output, nil
+}
+
+func (r *queryResolver) Companies(ctx context.Context, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) (*graphmodel.CompanyOutput, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Mutation returns generated.MutationResolver implementation.
