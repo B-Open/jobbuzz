@@ -27,7 +27,7 @@ func (r *mutationResolver) RegisterAccount(ctx context.Context, input graphmodel
 }
 
 func (r *queryResolver) Jobs(ctx context.Context, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) (*graphmodel.JobOutput, error) {
-	jobs, err := r.Service.GetJobs()
+	jobs, err := r.Service.GetJobs(pagination)
 	if err != nil {
 		return nil, werrors.Wrapf(err, "Error in GetJobs")
 	}
