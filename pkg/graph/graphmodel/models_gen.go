@@ -101,7 +101,6 @@ type StringFilterInput struct {
 
 // The registered User.
 type User struct {
-	ID          int    `json:"id"`
-	Email       string `json:"email"`
-	AccessToken string `json:"accessToken"`
+	ID    int    `json:"id"`
+	Email string `json:"email"`
 }

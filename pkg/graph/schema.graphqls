@@ -14,7 +14,6 @@ The registered User.
 type User {
   id: Int!
   email: String!
-  accessToken: String!
 }
 
 """
