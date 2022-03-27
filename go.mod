@@ -8,6 +8,7 @@ require (
 	github.com/gin-contrib/logger v0.2.1
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/golang-jwt/jwt/v4 v4.4.1
 	github.com/jinzhu/copier v0.3.5
 	github.com/mattn/go-isatty v0.0.14
 	github.com/pkg/errors v0.9.1
@@ -69,6 +70,6 @@ require (
 	github.com/99designs/gqlgen v0.16.0
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/crypto v0.0.0-20220208050332-20e1d8d225ab // indirect
+	golang.org/x/crypto v0.0.0-20220208050332-20e1d8d225ab
 	golang.org/x/sys v0.0.0-20220204135822-1c1b9b1eba6a // indirect
 )

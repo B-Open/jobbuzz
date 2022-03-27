@@ -1,7 +1,11 @@
 package service
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/b-open/jobbuzz/pkg/model"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -9,6 +13,13 @@ import (
 
 var (
 	ErrUserAlreadyExist = errors.New("User already exist")
+)
+
+type (
+	Claims struct {
+		Email string `json:"email"`
+		jwt.RegisteredClaims
+	}
 )
 
 func HashPassword(password string) (string, error) {
@@ -21,12 +32,34 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-func (s *Service) CreateUser(email string, password string) error {
+func generateAccessToken(user model.User) (string, error) {
+	claims := Claims{
+		user.Email,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+			Issuer:    "https://jobbuzz.org",
+			Subject:   fmt.Sprintf("%d", user.ID),
+			ID:        fmt.Sprintf("%d", user.ID),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	ss, err := token.SignedString([]byte("mysupersecretkey")) // TODO: use config
+	if err != nil {
+		return "", errors.Wrapf(err, "Error in SignedString")
+	}
+
+	return ss, nil
+}
+
+func (s *Service) CreateUser(email string, password string) (token string, err error) {
 	// TODO: validate email and check password
 	// create user
 	passwordHash, err := HashPassword(password)
 	if err != nil {
-		return errors.Wrapf(err, "Error in HashPassword")
+		return "", errors.Wrapf(err, "Error in HashPassword")
 	}
 
 	user := model.User{
@@ -52,9 +85,16 @@ func (s *Service) CreateUser(email string, password string) error {
 		return nil
 	})
 	if err != nil {
-		return errors.Wrapf(err, "Error in Transaction")
+		if err == ErrUserAlreadyExist {
+			return "", err
+		}
+		return "", errors.Wrapf(err, "Error in Transaction")
 	}
 
-	return nil
-	// TODO: create jwt and return
+	token, err = generateAccessToken(user)
+	if err != nil {
+		return "", errors.Wrapf(err, "Error in generateAccessToken")
+	}
+
+	return token, nil
 }

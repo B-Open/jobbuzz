@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/b-open/jobbuzz/pkg/model"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -34,6 +36,35 @@ func TestCheckPasswordHash(t *testing.T) {
 	})
 }
 
+func TestGenerateAccessToken(t *testing.T) {
+	user := model.User{
+		BaseModel: model.BaseModel{
+			ID: 1,
+		},
+		Email: "test@example.com",
+	}
+
+	got, err := generateAccessToken(user)
+
+	// assert that result was returned
+	assert.Nil(t, err)
+	assert.NotEmpty(t, got)
+
+	// check token contents
+	token, err := jwt.ParseWithClaims(got, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte("mysupersecretkey"), nil
+	})
+
+	if claims, ok := token.Claims.(*Claims); !ok || !token.Valid {
+		t.Error(err)
+	} else {
+		assert.Equal(t, "https://jobbuzz.org", claims.Issuer)
+		assert.Equal(t, "1", claims.Subject)
+		assert.Equal(t, "1", claims.ID)
+	}
+
+}
+
 func TestCreateAccount(t *testing.T) {
 	t.Run("new account", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
@@ -57,7 +88,7 @@ func TestCreateAccount(t *testing.T) {
 		}
 
 		s := Service{DB: gormDB}
-		err = s.CreateUser("test@example.com", "mypassword")
+		_, err = s.CreateUser("test@example.com", "mypassword")
 
 		assert.Nil(t, err)
 		assert.Nil(t, mock.ExpectationsWereMet(), "sqlmock expectations were not met")
@@ -82,7 +113,7 @@ func TestCreateAccount(t *testing.T) {
 		}
 
 		s := Service{DB: gormDB}
-		err = s.CreateUser("test@example.com", "mypassword")
+		_, err = s.CreateUser("test@example.com", "mypassword")
 
 		assert.ErrorIs(t, err, ErrUserAlreadyExist)
 		assert.Nil(t, mock.ExpectationsWereMet(), "sqlmock expectations were not met")
