@@ -1,15 +1,16 @@
 package service
 
 import (
+	"github.com/b-open/jobbuzz/pkg/graph/graphmodel"
 	"github.com/b-open/jobbuzz/pkg/model"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
-func (s *Service) GetJobs() ([]*model.Job, error) {
+func (s *Service) GetJobs(pagination graphmodel.PaginationInput) ([]*model.Job, error) {
 	var jobs []*model.Job
 
-	results := s.DB.Find(&jobs)
+	results := s.DB.Limit(*pagination.Limit).Offset(*pagination.Offset).Find(&jobs)
 	if err := results.Error; err != nil {
 		return nil, err
 	}

@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/b-open/jobbuzz/pkg/graph/graphmodel"
 	"github.com/b-open/jobbuzz/pkg/model"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +17,7 @@ type MockService struct {
 	mock.Mock
 }
 
-func (s *MockService) GetJobs() ([]*model.Job, error) {
+func (s *MockService) GetJobs(pagination graphmodel.PaginationInput) ([]*model.Job, error) {
 	args := s.Called()
 
 	jobs := args.Get(0)
