@@ -41,7 +41,6 @@ func generateAccessToken(user model.User) (string, error) {
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			Issuer:    "https://jobbuzz.org",
 			Subject:   fmt.Sprintf("%d", user.ID),
-			ID:        fmt.Sprintf("%d", user.ID),
 		},
 	}
 

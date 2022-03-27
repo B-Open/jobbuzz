@@ -60,9 +60,7 @@ func TestGenerateAccessToken(t *testing.T) {
 	} else {
 		assert.Equal(t, "https://jobbuzz.org", claims.Issuer)
 		assert.Equal(t, "1", claims.Subject)
-		assert.Equal(t, "1", claims.ID)
 	}
-
 }
 
 func TestCreateAccount(t *testing.T) {

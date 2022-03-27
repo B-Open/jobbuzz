@@ -25,6 +25,22 @@ func (s *MockService) GetJobs() ([]*model.Job, error) {
 	return args.Get(0).([]*model.Job), args.Error(1)
 }
 
+func (s *MockService) CreateUser(email string, password string) (string, error) {
+	args := s.Called()
+	return args.Get(0).(string), args.Error(1)
+}
+
+func TestRegisterAccount(t *testing.T) {
+	mockService := MockService{}
+	mockService.On("CreateUser").Return("accesstoken", nil)
+
+	r := Resolver{Service: &mockService}
+
+	_, err := r.Mutation().RegisterAccount(nil, graphmodel.NewUserInput{Email: "test@example.com", Password: "password"})
+
+	assert.Nil(t, err)
+}
+
 func TestJobs(t *testing.T) {
 	t.Run("test return 1 job", func(t *testing.T) {
 		mockService := MockService{}

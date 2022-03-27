@@ -14,7 +14,16 @@ import (
 )
 
 func (r *mutationResolver) RegisterAccount(ctx context.Context, input graphmodel.NewUserInput) (graphmodel.NewUser, error) {
-	panic(fmt.Errorf("not implemented"))
+	token, err := r.Service.CreateUser(input.Email, input.Password)
+	if err != nil {
+		return nil, werrors.Wrapf(err, "Error in CreateUser")
+	}
+
+	output := graphmodel.LoginResult{
+		AccessToken: token,
+	}
+
+	return output, nil
 }
 
 func (r *queryResolver) Jobs(ctx context.Context, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) (*graphmodel.JobOutput, error) {

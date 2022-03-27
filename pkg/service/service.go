@@ -7,6 +7,7 @@ import (
 
 type Servicer interface {
 	GetJobs() ([]*model.Job, error)
+	CreateUser(email string, password string) (token string, err error)
 }
 
 type Service struct {

@@ -27,6 +27,11 @@ func (s *MockService) GetJobs() ([]*model.Job, error) {
 	return args.Get(0).([]*model.Job), args.Error(1)
 }
 
+func (s *MockService) CreateUser(email string, password string) (string, error) {
+	args := s.Called()
+	return args.Get(0).(string), args.Error(1)
+}
+
 func TestGetJobs(t *testing.T) {
 	t.Run("Get empty jobs", func(t *testing.T) {
 		w := httptest.NewRecorder()

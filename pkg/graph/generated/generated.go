@@ -84,6 +84,10 @@ type ComplexityRoot struct {
 		TotalPage   func(childComplexity int) int
 	}
 
+	LoginResult struct {
+		AccessToken func(childComplexity int) int
+	}
+
 	Mutation struct {
 		RegisterAccount func(childComplexity int, input graphmodel.NewUserInput) int
 	}
@@ -98,8 +102,9 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		Email func(childComplexity int) int
-		ID    func(childComplexity int) int
+		AccessToken func(childComplexity int) int
+		Email       func(childComplexity int) int
+		ID          func(childComplexity int) int
 	}
 }
 
@@ -315,6 +320,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.JobOutput.TotalPage(childComplexity), true
 
+	case "LoginResult.accessToken":
+		if e.complexity.LoginResult.AccessToken == nil {
+			break
+		}
+
+		return e.complexity.LoginResult.AccessToken(childComplexity), true
+
 	case "Mutation.registerAccount":
 		if e.complexity.Mutation.RegisterAccount == nil {
 			break
@@ -357,6 +369,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.StandardError.Message(childComplexity), true
+
+	case "User.accessToken":
+		if e.complexity.User.AccessToken == nil {
+			break
+		}
+
+		return e.complexity.User.AccessToken(childComplexity), true
 
 	case "User.email":
 		if e.complexity.User.Email == nil {
@@ -452,6 +471,14 @@ The registered User.
 type User {
   id: Int!
   email: String!
+  accessToken: String!
+}
+
+"""
+The login result
+"""
+type LoginResult {
+	accessToken: String!
 }
 
 """
@@ -549,7 +576,7 @@ type CompanyOutput implements PaginatedOutput {
   error: StandardError
 }
 
-union NewUser = User | StandardError
+union NewUser = LoginResult | StandardError
 
 type Query {
   """
@@ -1631,6 +1658,41 @@ func (ec *executionContext) _JobOutput_error(ctx context.Context, field graphql.
 	return ec.marshalOStandardError2ᚖgithubᚗcomᚋbᚑopenᚋjobbuzzᚋpkgᚋgraphᚋgraphmodelᚐStandardError(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _LoginResult_accessToken(ctx context.Context, field graphql.CollectedField, obj *graphmodel.LoginResult) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "LoginResult",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AccessToken, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_registerAccount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1917,6 +1979,41 @@ func (ec *executionContext) _User_email(ctx context.Context, field graphql.Colle
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Email, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_accessToken(ctx context.Context, field graphql.CollectedField, obj *graphmodel.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AccessToken, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3187,13 +3284,13 @@ func (ec *executionContext) _NewUser(ctx context.Context, sel ast.SelectionSet, 
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case graphmodel.User:
-		return ec._User(ctx, sel, &obj)
-	case *graphmodel.User:
+	case graphmodel.LoginResult:
+		return ec._LoginResult(ctx, sel, &obj)
+	case *graphmodel.LoginResult:
 		if obj == nil {
 			return graphql.Null
 		}
-		return ec._User(ctx, sel, obj)
+		return ec._LoginResult(ctx, sel, obj)
 	case graphmodel.StandardError:
 		return ec._StandardError(ctx, sel, &obj)
 	case *graphmodel.StandardError:
@@ -3581,6 +3678,37 @@ func (ec *executionContext) _JobOutput(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
+var loginResultImplementors = []string{"LoginResult", "NewUser"}
+
+func (ec *executionContext) _LoginResult(ctx context.Context, sel ast.SelectionSet, obj *graphmodel.LoginResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, loginResultImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LoginResult")
+		case "accessToken":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._LoginResult_accessToken(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -3742,7 +3870,7 @@ func (ec *executionContext) _StandardError(ctx context.Context, sel ast.Selectio
 	return out
 }
 
-var userImplementors = []string{"User", "NewUser"}
+var userImplementors = []string{"User"}
 
 func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *graphmodel.User) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, userImplementors)
@@ -3765,6 +3893,16 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 		case "email":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._User_email(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "accessToken":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._User_accessToken(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
