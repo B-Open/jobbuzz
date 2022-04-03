@@ -8,6 +8,7 @@ import (
 
 type Servicer interface {
 	GetJobs(pagination graphmodel.PaginationInput) ([]*model.Job, error)
+	GetCompanies(pagination graphmodel.PaginationInput) ([]*model.Company, error)
 }
 
 type Service struct {
