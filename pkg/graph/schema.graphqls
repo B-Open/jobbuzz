@@ -17,6 +17,13 @@ type User {
 }
 
 """
+The login result
+"""
+type LoginResult {
+	accessToken: String!
+}
+
+"""
 A single job listing item.
 """
 type Job {
@@ -111,7 +118,7 @@ type CompanyOutput implements PaginatedOutput {
   error: StandardError
 }
 
-union NewUser = User | StandardError
+union NewUser = LoginResult | StandardError
 
 type Query {
   """

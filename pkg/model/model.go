@@ -50,3 +50,10 @@ func (c *Company) GetContent() (map[string]interface{}, error) {
 	err := json.Unmarshal([]byte(c.Content), &content)
 	return content, err
 }
+
+// TODO: set unique constraint on email
+type User struct {
+	BaseModel
+	Email        string `json:"email"`
+	PasswordHash string
+}
