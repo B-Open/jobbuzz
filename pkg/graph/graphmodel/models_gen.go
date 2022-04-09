@@ -65,6 +65,13 @@ type JobOutput struct {
 
 func (JobOutput) IsPaginatedOutput() {}
 
+// The login result
+type LoginResult struct {
+	AccessToken string `json:"accessToken"`
+}
+
+func (LoginResult) IsNewUser() {}
+
 // The input for registering a new user.
 type NewUserInput struct {
 	Email    string `json:"email"`
@@ -97,5 +104,3 @@ type User struct {
 	ID    int    `json:"id"`
 	Email string `json:"email"`
 }
-
-func (User) IsNewUser() {}
