@@ -25,6 +25,17 @@ func (s *MockService) GetJobs(pagination graphmodel.PaginationInput) ([]*model.J
 	return args.Get(0).([]*model.Job), args.Error(1)
 }
 
+func (s *MockService) GetCompanies(pagination graphmodel.PaginationInput) ([]*model.Company, error) {
+	args := s.Called()
+
+	jobs := args.Get(0)
+	if jobs == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).([]*model.Company), args.Error(1)
+}
+
 func (s *MockService) CreateUser(email string, password string) (string, error) {
 	args := s.Called()
 	return args.Get(0).(string), args.Error(1)
@@ -110,5 +121,21 @@ func TestJobs(t *testing.T) {
 
 		_, err := r.Query().Jobs(nil, nil, graphmodel.PaginationInput{})
 		assert.NotNil(t, err, "Error was expected but not found.")
+	})
+}
+
+func TestCompanies(t *testing.T) {
+	t.Run("get 1 company", func(t *testing.T) {
+		mockService := MockService{}
+		mockService.On("GetCompanies").Return([]*model.Company{
+			{BaseModel: model.BaseModel{ID: 1}},
+		}, nil)
+
+		r := Resolver{Service: &mockService}
+
+		got, err := r.Query().Companies(nil, nil, graphmodel.PaginationInput{})
+
+		assert.Nil(t, err)
+		assert.NotEmpty(t, got)
 	})
 }

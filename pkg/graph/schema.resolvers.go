@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/b-open/jobbuzz/pkg/graph/generated"
 	"github.com/b-open/jobbuzz/pkg/graph/graphmodel"
@@ -46,7 +45,22 @@ func (r *queryResolver) Jobs(ctx context.Context, search *graphmodel.StringFilte
 }
 
 func (r *queryResolver) Companies(ctx context.Context, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) (*graphmodel.CompanyOutput, error) {
-	panic(fmt.Errorf("not implemented"))
+	companies, err := r.Service.GetCompanies(pagination)
+	if err != nil {
+		return nil, werrors.Wrapf(err, "Error in GetCompanies")
+	}
+
+	var graphqlCompanies []*graphmodel.Company
+	err = copier.Copy(&graphqlCompanies, &companies)
+	if err != nil {
+		return nil, werrors.Wrapf(err, "Error copying structs")
+	}
+
+	output := &graphmodel.CompanyOutput{
+		Data: graphqlCompanies,
+	}
+
+	return output, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

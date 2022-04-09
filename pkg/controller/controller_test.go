@@ -28,6 +28,17 @@ func (s *MockService) GetJobs(pagination graphmodel.PaginationInput) ([]*model.J
 	return args.Get(0).([]*model.Job), args.Error(1)
 }
 
+func (s *MockService) GetCompanies(pagination graphmodel.PaginationInput) ([]*model.Company, error) {
+	args := s.Called()
+
+	jobs := args.Get(0)
+	if jobs == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).([]*model.Company), args.Error(1)
+}
+
 func (s *MockService) CreateUser(email string, password string) (string, error) {
 	args := s.Called()
 	return args.Get(0).(string), args.Error(1)

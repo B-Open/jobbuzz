@@ -8,6 +8,7 @@ import (
 
 type Servicer interface {
 	GetJobs(pagination graphmodel.PaginationInput) ([]*model.Job, error)
+	GetCompanies(pagination graphmodel.PaginationInput) ([]*model.Company, error)
 	CreateUser(email string, password string) (token string, err error)
 }
 
