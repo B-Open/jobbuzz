@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/b-open/jobbuzz/pkg/graph/generated"
 	"github.com/b-open/jobbuzz/pkg/graph/graphmodel"
