@@ -10,7 +10,7 @@ import (
 func (s *Service) GetJobs(pagination graphmodel.PaginationInput) ([]*model.Job, error) {
 	var jobs []*model.Job
 
-	results := s.DB.Limit(*pagination.Limit).Offset(*pagination.Offset).Find(&jobs)
+	results := s.DB.Limit(pagination.Limit).Offset(pagination.Offset).Find(&jobs)
 	if err := results.Error; err != nil {
 		return nil, err
 	}

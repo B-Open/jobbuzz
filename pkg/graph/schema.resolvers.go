@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"math"
 
 	"github.com/b-open/jobbuzz/pkg/graph/generated"
 	"github.com/b-open/jobbuzz/pkg/graph/graphmodel"
@@ -37,8 +38,13 @@ func (r *queryResolver) Jobs(ctx context.Context, search *graphmodel.StringFilte
 		return nil, werrors.Wrapf(err, "Error copying structs")
 	}
 
+	// TODO: move pagination logic to a func
 	output := &graphmodel.JobOutput{
-		Data: graphqlJobs,
+		From:        pagination.Offset,
+		To:          pagination.Offset + len(graphqlJobs),
+		PerPage:     pagination.Limit,
+		CurrentPage: int(math.Ceil(float64(pagination.Offset) / float64(pagination.Limit))),
+		Data:        graphqlJobs,
 	}
 
 	return output, nil

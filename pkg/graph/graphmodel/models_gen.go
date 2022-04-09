@@ -80,8 +80,8 @@ type NewUserInput struct {
 
 type PaginationInput struct {
 	// Standard Pagination Inputs
-	Limit  *int `json:"limit"`
-	Offset *int `json:"offset"`
+	Limit  int `json:"limit"`
+	Offset int `json:"offset"`
 }
 
 type StandardError struct {
