@@ -7,15 +7,22 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *Service) GetJobs(pagination graphmodel.PaginationInput) ([]*model.Job, error) {
+func (s *Service) GetJobs(pagination graphmodel.PaginationInput) ([]*model.Job, int64, error) {
 	var jobs []*model.Job
 
 	results := s.DB.Limit(pagination.Limit).Offset(pagination.Offset).Find(&jobs)
-	if err := results.Error; err != nil {
-		return nil, err
+	if results.Error != nil {
+		return nil, 0, results.Error
 	}
 
-	return jobs, nil
+	var totalCount int64
+	// TODO: check deleted
+	countResult := s.DB.Model(&model.Job{}).Count(&totalCount)
+	if countResult.Error != nil {
+		return nil, 0, countResult.Error
+	}
+
+	return jobs, totalCount, nil
 }
 
 func (s *Service) CreateJobsAndCompanies(jobs []*model.Job, companies map[string]*model.Company) error {

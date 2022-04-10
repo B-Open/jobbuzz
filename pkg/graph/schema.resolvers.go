@@ -27,7 +27,7 @@ func (r *mutationResolver) RegisterAccount(ctx context.Context, input graphmodel
 }
 
 func (r *queryResolver) Jobs(ctx context.Context, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) (*graphmodel.JobOutput, error) {
-	jobs, err := r.Service.GetJobs(pagination)
+	jobs, totalCount, err := r.Service.GetJobs(pagination)
 	if err != nil {
 		return nil, werrors.Wrapf(err, "Error in GetJobs")
 	}
@@ -44,6 +44,8 @@ func (r *queryResolver) Jobs(ctx context.Context, search *graphmodel.StringFilte
 		To:          pagination.Offset + len(graphqlJobs),
 		PerPage:     pagination.Limit,
 		CurrentPage: int(math.Ceil(float64(pagination.Offset) / float64(pagination.Limit))),
+		TotalPage:   int(math.Ceil(float64(totalCount) / float64(pagination.Limit))),
+		Total:       int(totalCount),
 		Data:        graphqlJobs,
 	}
 
@@ -51,7 +53,7 @@ func (r *queryResolver) Jobs(ctx context.Context, search *graphmodel.StringFilte
 }
 
 func (r *queryResolver) Companies(ctx context.Context, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) (*graphmodel.CompanyOutput, error) {
-	companies, err := r.Service.GetCompanies(pagination)
+	companies, _, err := r.Service.GetCompanies(pagination)
 	if err != nil {
 		return nil, werrors.Wrapf(err, "Error in GetCompanies")
 	}

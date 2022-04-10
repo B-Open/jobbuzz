@@ -25,7 +25,7 @@ func Ping(c *gin.Context) {
 }
 
 func (controller *Controller) GetJobs(c *gin.Context) {
-	jobs, err := controller.Service.GetJobs(graphmodel.PaginationInput{})
+	jobs, _, err := controller.Service.GetJobs(graphmodel.PaginationInput{})
 	if err != nil {
 		panic(err)
 	}

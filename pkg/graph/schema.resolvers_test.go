@@ -14,26 +14,26 @@ type MockService struct {
 	mock.Mock
 }
 
-func (s *MockService) GetJobs(pagination graphmodel.PaginationInput) ([]*model.Job, error) {
+func (s *MockService) GetJobs(pagination graphmodel.PaginationInput) ([]*model.Job, int64, error) {
 	args := s.Called()
 
 	jobs := args.Get(0)
 	if jobs == nil {
-		return nil, args.Error(1)
+		return nil, args.Get(1).(int64), args.Error(2)
 	}
 
-	return args.Get(0).([]*model.Job), args.Error(1)
+	return args.Get(0).([]*model.Job), args.Get(1).(int64), args.Error(2)
 }
 
-func (s *MockService) GetCompanies(pagination graphmodel.PaginationInput) ([]*model.Company, error) {
+func (s *MockService) GetCompanies(pagination graphmodel.PaginationInput) ([]*model.Company, int64, error) {
 	args := s.Called()
 
 	jobs := args.Get(0)
 	if jobs == nil {
-		return nil, args.Error(1)
+		return nil, args.Get(1).(int64), args.Error(2)
 	}
 
-	return args.Get(0).([]*model.Company), args.Error(1)
+	return args.Get(0).([]*model.Company), args.Get(1).(int64), args.Error(2)
 }
 
 func (s *MockService) CreateUser(email string, password string) (string, error) {
@@ -62,7 +62,7 @@ func TestJobs(t *testing.T) {
 				},
 				Title: "test job",
 			},
-		}, nil)
+		}, int64(1), nil)
 
 		r := Resolver{Service: &mockService}
 
@@ -86,7 +86,7 @@ func TestJobs(t *testing.T) {
 				Title: "test job",
 			})
 		}
-		mockService.On("GetJobs").Return(mockJobs, nil)
+		mockService.On("GetJobs").Return(mockJobs, int64(20), nil)
 
 		r := Resolver{Service: &mockService}
 
@@ -101,7 +101,7 @@ func TestJobs(t *testing.T) {
 
 	t.Run("test return no jobs", func(t *testing.T) {
 		mockService := MockService{}
-		mockService.On("GetJobs").Return([]*model.Job{}, nil)
+		mockService.On("GetJobs").Return([]*model.Job{}, int64(0), nil)
 
 		r := Resolver{Service: &mockService}
 
@@ -115,7 +115,7 @@ func TestJobs(t *testing.T) {
 
 	t.Run("test error", func(t *testing.T) {
 		mockService := MockService{}
-		mockService.On("GetJobs").Return(nil, errors.New("error"))
+		mockService.On("GetJobs").Return(nil, int64(0), errors.New("error"))
 
 		r := Resolver{Service: &mockService}
 
@@ -129,7 +129,7 @@ func TestCompanies(t *testing.T) {
 		mockService := MockService{}
 		mockService.On("GetCompanies").Return([]*model.Company{
 			{BaseModel: model.BaseModel{ID: 1}},
-		}, nil)
+		}, int64(1), nil)
 
 		r := Resolver{Service: &mockService}
 
