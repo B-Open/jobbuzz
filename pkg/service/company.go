@@ -14,8 +14,7 @@ func (s *Service) GetCompanies(pagination graphmodel.PaginationInput) ([]*model.
 	}
 
 	var totalCount int64
-	// TODO: check deleted
-	countResult := s.DB.Model(&model.Company{}).Count(&totalCount)
+	countResult := s.DB.Model(&model.Company{}).Where("deleted_at IS NULL").Count(&totalCount)
 	if countResult.Error != nil {
 		return nil, 0, countResult.Error
 	}

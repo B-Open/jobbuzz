@@ -16,8 +16,7 @@ func (s *Service) GetJobs(pagination graphmodel.PaginationInput) ([]*model.Job, 
 	}
 
 	var totalCount int64
-	// TODO: check deleted
-	countResult := s.DB.Model(&model.Job{}).Count(&totalCount)
+	countResult := s.DB.Model(&model.Job{}).Where("deleted_at IS NULL").Count(&totalCount)
 	if countResult.Error != nil {
 		return nil, 0, countResult.Error
 	}
