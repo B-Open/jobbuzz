@@ -508,8 +508,8 @@ input PaginationInput {
   """
   Standard Pagination Inputs
   """
-  limit: Int! = 10
-  offset: Int! = 0
+  size: Int! = 10
+  page: Int! = 0
 }
 
 interface PaginatedOutput {
@@ -3146,28 +3146,28 @@ func (ec *executionContext) unmarshalInputPaginationInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	if _, present := asMap["limit"]; !present {
-		asMap["limit"] = 10
+	if _, present := asMap["size"]; !present {
+		asMap["size"] = 10
 	}
-	if _, present := asMap["offset"]; !present {
-		asMap["offset"] = 0
+	if _, present := asMap["page"]; !present {
+		asMap["page"] = 0
 	}
 
 	for k, v := range asMap {
 		switch k {
-		case "limit":
+		case "size":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-			it.Limit, err = ec.unmarshalNInt2int(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("size"))
+			it.Size, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "offset":
+		case "page":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
-			it.Offset, err = ec.unmarshalNInt2int(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			it.Page, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}

@@ -59,8 +59,8 @@ input PaginationInput {
   """
   Standard Pagination Inputs
   """
-  limit: Int! = 10
-  offset: Int! = 0
+  size: Int! = 10
+  page: Int! = 0
 }
 
 interface PaginatedOutput {

@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"math"
 
 	"github.com/b-open/jobbuzz/pkg/graph/generated"
 	"github.com/b-open/jobbuzz/pkg/graph/graphmodel"
@@ -27,7 +26,7 @@ func (r *mutationResolver) RegisterAccount(ctx context.Context, input graphmodel
 }
 
 func (r *queryResolver) Jobs(ctx context.Context, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) (*graphmodel.JobOutput, error) {
-	jobs, totalCount, err := r.Service.GetJobs(pagination)
+	jobs, _, err := r.Service.GetJobs(pagination)
 	if err != nil {
 		return nil, werrors.Wrapf(err, "Error in GetJobs")
 	}
@@ -40,20 +39,20 @@ func (r *queryResolver) Jobs(ctx context.Context, search *graphmodel.StringFilte
 
 	// TODO: move pagination logic to a func
 	output := &graphmodel.JobOutput{
-		From:        pagination.Offset,
-		To:          pagination.Offset + len(graphqlJobs),
-		PerPage:     pagination.Limit,
-		CurrentPage: int(math.Ceil(float64(pagination.Offset) / float64(pagination.Limit))),
-		TotalPage:   int(math.Ceil(float64(totalCount) / float64(pagination.Limit))),
-		Total:       int(totalCount),
-		Data:        graphqlJobs,
+		// From:        pagination.Offset,
+		// To:          pagination.Offset + len(graphqlJobs),
+		// PerPage:     pagination.Limit,
+		// CurrentPage: int(math.Ceil(float64(pagination.Offset) / float64(pagination.Limit))),
+		// TotalPage:   int(math.Ceil(float64(totalCount) / float64(pagination.Limit))),
+		// Total:       int(totalCount),
+		Data: graphqlJobs,
 	}
 
 	return output, nil
 }
 
 func (r *queryResolver) Companies(ctx context.Context, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) (*graphmodel.CompanyOutput, error) {
-	companies, totalCount, err := r.Service.GetCompanies(pagination)
+	companies, _, err := r.Service.GetCompanies(pagination)
 	if err != nil {
 		return nil, werrors.Wrapf(err, "Error in GetCompanies")
 	}
@@ -65,13 +64,13 @@ func (r *queryResolver) Companies(ctx context.Context, search *graphmodel.String
 	}
 
 	output := &graphmodel.CompanyOutput{
-		From:        pagination.Offset,
-		To:          pagination.Offset + len(graphqlCompanies),
-		PerPage:     pagination.Limit,
-		CurrentPage: int(math.Ceil(float64(pagination.Offset) / float64(pagination.Limit))),
-		TotalPage:   int(math.Ceil(float64(totalCount) / float64(pagination.Limit))),
-		Total:       int(totalCount),
-		Data:        graphqlCompanies,
+		// From:        pagination.Offset,
+		// To:          pagination.Offset + len(graphqlCompanies),
+		// PerPage:     pagination.Limit,
+		// CurrentPage: int(math.Ceil(float64(pagination.Offset) / float64(pagination.Limit))),
+		// TotalPage:   int(math.Ceil(float64(totalCount) / float64(pagination.Limit))),
+		// Total:       int(totalCount),
+		Data: graphqlCompanies,
 	}
 
 	return output, nil
