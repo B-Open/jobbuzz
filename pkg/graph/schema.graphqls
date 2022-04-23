@@ -60,7 +60,7 @@ input PaginationInput {
   Standard Pagination Inputs
   """
   size: Int! = 10
-  page: Int! = 0
+  page: Int! = 1
 }
 
 interface PaginatedOutput {

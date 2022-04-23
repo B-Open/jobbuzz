@@ -26,7 +26,7 @@ func (r *mutationResolver) RegisterAccount(ctx context.Context, input graphmodel
 }
 
 func (r *queryResolver) Jobs(ctx context.Context, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) (*graphmodel.JobOutput, error) {
-	jobs, _, err := r.Service.GetJobs(pagination)
+	jobs, paginationResult, err := r.Service.GetJobs(pagination)
 	if err != nil {
 		return nil, werrors.Wrapf(err, "Error in GetJobs")
 	}
@@ -37,22 +37,20 @@ func (r *queryResolver) Jobs(ctx context.Context, search *graphmodel.StringFilte
 		return nil, werrors.Wrapf(err, "Error copying structs")
 	}
 
-	// TODO: move pagination logic to a func
 	output := &graphmodel.JobOutput{
-		// From:        pagination.Offset,
-		// To:          pagination.Offset + len(graphqlJobs),
-		// PerPage:     pagination.Limit,
-		// CurrentPage: int(math.Ceil(float64(pagination.Offset) / float64(pagination.Limit))),
-		// TotalPage:   int(math.Ceil(float64(totalCount) / float64(pagination.Limit))),
-		// Total:       int(totalCount),
 		Data: graphqlJobs,
+	}
+
+	err = copier.Copy(output, paginationResult)
+	if err != nil {
+		return nil, werrors.Wrapf(err, "Error copying pagination result struct")
 	}
 
 	return output, nil
 }
 
 func (r *queryResolver) Companies(ctx context.Context, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) (*graphmodel.CompanyOutput, error) {
-	companies, _, err := r.Service.GetCompanies(pagination)
+	companies, paginationResult, err := r.Service.GetCompanies(pagination)
 	if err != nil {
 		return nil, werrors.Wrapf(err, "Error in GetCompanies")
 	}
@@ -64,13 +62,12 @@ func (r *queryResolver) Companies(ctx context.Context, search *graphmodel.String
 	}
 
 	output := &graphmodel.CompanyOutput{
-		// From:        pagination.Offset,
-		// To:          pagination.Offset + len(graphqlCompanies),
-		// PerPage:     pagination.Limit,
-		// CurrentPage: int(math.Ceil(float64(pagination.Offset) / float64(pagination.Limit))),
-		// TotalPage:   int(math.Ceil(float64(totalCount) / float64(pagination.Limit))),
-		// Total:       int(totalCount),
 		Data: graphqlCompanies,
+	}
+
+	err = copier.Copy(output, paginationResult)
+	if err != nil {
+		return nil, werrors.Wrapf(err, "Error copying pagination result struct")
 	}
 
 	return output, nil

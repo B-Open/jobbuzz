@@ -509,7 +509,7 @@ input PaginationInput {
   Standard Pagination Inputs
   """
   size: Int! = 10
-  page: Int! = 0
+  page: Int! = 1
 }
 
 interface PaginatedOutput {
@@ -3150,7 +3150,7 @@ func (ec *executionContext) unmarshalInputPaginationInput(ctx context.Context, o
 		asMap["size"] = 10
 	}
 	if _, present := asMap["page"]; !present {
-		asMap["page"] = 0
+		asMap["page"] = 1
 	}
 
 	for k, v := range asMap {

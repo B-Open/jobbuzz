@@ -63,17 +63,40 @@ func TestJobs(t *testing.T) {
 				},
 				Title: "test job",
 			},
-		}, &pagination.PaginationResult{}, nil)
+		}, &pagination.PaginationResult{
+			To:          1,
+			From:        1,
+			PerPage:     10,
+			CurrentPage: 1,
+			TotalPage:   1,
+			Total:       1,
+		}, nil)
 
 		r := Resolver{Service: &mockService}
 
-		result, err := r.Query().Jobs(nil, nil, graphmodel.PaginationInput{})
+		want := &graphmodel.JobOutput{
+			To:          1,
+			From:        1,
+			PerPage:     10,
+			CurrentPage: 1,
+			TotalPage:   1,
+			Total:       1,
+			Data: []*graphmodel.Job{
+				{
+					ID:    1,
+					Title: "test job",
+				},
+			},
+		}
+
+		got, err := r.Query().Jobs(nil, nil, graphmodel.PaginationInput{Page: 1, Size: 10})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		assert.NotEmpty(t, result.Data, "Jobs should not be empty")
-		assert.Len(t, result.Data, 1)
+		assert.NotEmpty(t, got.Data, "Jobs should not be empty")
+		assert.Len(t, got.Data, 1)
+		assert.Equal(t, want, got)
 	})
 
 	t.Run("test return 20 jobs", func(t *testing.T) {
