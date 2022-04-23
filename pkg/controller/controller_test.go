@@ -8,6 +8,7 @@ import (
 
 	"github.com/b-open/jobbuzz/pkg/graph/graphmodel"
 	"github.com/b-open/jobbuzz/pkg/model"
+	"github.com/b-open/jobbuzz/pkg/pagination"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -17,26 +18,26 @@ type MockService struct {
 	mock.Mock
 }
 
-func (s *MockService) GetJobs(pagination graphmodel.PaginationInput) ([]*model.Job, int64, error) {
+func (s *MockService) GetJobs(paginationInput graphmodel.PaginationInput) ([]*model.Job, *pagination.PaginationResult, error) {
 	args := s.Called()
 
 	jobs := args.Get(0)
 	if jobs == nil {
-		return nil, args.Get(1).(int64), args.Error(2)
+		return nil, nil, args.Error(2)
 	}
 
-	return args.Get(0).([]*model.Job), args.Get(1).(int64), args.Error(2)
+	return args.Get(0).([]*model.Job), args.Get(1).(*pagination.PaginationResult), args.Error(2)
 }
 
-func (s *MockService) GetCompanies(pagination graphmodel.PaginationInput) ([]*model.Company, int64, error) {
+func (s *MockService) GetCompanies(paginationInput graphmodel.PaginationInput) ([]*model.Company, *pagination.PaginationResult, error) {
 	args := s.Called()
 
 	jobs := args.Get(0)
 	if jobs == nil {
-		return nil, args.Get(1).(int64), args.Error(2)
+		return nil, args.Get(1).(*pagination.PaginationResult), args.Error(2)
 	}
 
-	return args.Get(0).([]*model.Company), args.Get(1).(int64), args.Error(2)
+	return args.Get(0).([]*model.Company), args.Get(1).(*pagination.PaginationResult), args.Error(2)
 }
 
 func (s *MockService) CreateUser(email string, password string) (string, error) {
@@ -50,7 +51,7 @@ func TestGetJobs(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 
 		service := MockService{}
-		service.On("GetJobs").Return([]*model.Job{}, int64(0), nil)
+		service.On("GetJobs").Return([]*model.Job{}, &pagination.PaginationResult{}, nil)
 
 		controller := Controller{Service: &service}
 		controller.GetJobs(c)
@@ -70,7 +71,7 @@ func TestGetJobs(t *testing.T) {
 				},
 				Title: "test job",
 			},
-		}, int64(1), nil)
+		}, &pagination.PaginationResult{}, nil)
 
 		controller := Controller{Service: &service}
 		controller.GetJobs(c)
@@ -83,7 +84,7 @@ func TestGetJobs(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 
 		service := MockService{}
-		service.On("GetJobs").Return([]*model.Job{}, int64(0), errors.New("service error"))
+		service.On("GetJobs").Return([]*model.Job{}, &pagination.PaginationResult{}, errors.New("service error"))
 
 		controller := Controller{Service: &service}
 

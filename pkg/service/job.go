@@ -3,25 +3,28 @@ package service
 import (
 	"github.com/b-open/jobbuzz/pkg/graph/graphmodel"
 	"github.com/b-open/jobbuzz/pkg/model"
+	"github.com/b-open/jobbuzz/pkg/pagination"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
-func (s *Service) GetJobs(pagination graphmodel.PaginationInput) ([]*model.Job, int64, error) {
+func (s *Service) GetJobs(paginationInput graphmodel.PaginationInput) ([]*model.Job, *pagination.PaginationResult, error) {
 	var jobs []*model.Job
 
-	results := s.DB.Limit(pagination.Limit).Offset(pagination.Offset).Find(&jobs)
+	results := s.DB.Limit(paginationInput.Size).Offset(pagination.GetOffset(paginationInput)).Find(&jobs)
 	if results.Error != nil {
-		return nil, 0, results.Error
+		return nil, nil, results.Error
 	}
 
 	var totalCount int64
 	countResult := s.DB.Model(&model.Job{}).Where("deleted_at IS NULL").Count(&totalCount)
 	if countResult.Error != nil {
-		return nil, 0, countResult.Error
+		return nil, nil, countResult.Error
 	}
 
-	return jobs, totalCount, nil
+	paginationResult := pagination.GetPaginationResult(paginationInput, len(jobs), int(totalCount))
+
+	return jobs, &paginationResult, nil
 }
 
 func (s *Service) CreateJobsAndCompanies(jobs []*model.Job, companies map[string]*model.Company) error {
