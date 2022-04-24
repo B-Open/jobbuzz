@@ -24,6 +24,7 @@ type Company struct {
 	CreatedAt string `json:"createdAt"`
 	UpdatedAt string `json:"updatedAt"`
 	Name      string `json:"name"`
+	Provider  int    `json:"provider"`
 }
 
 type CompanyOutput struct {
@@ -42,13 +43,16 @@ func (CompanyOutput) IsPaginatedOutput() {}
 
 // A single job listing item.
 type Job struct {
-	ID        int       `json:"id"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	Title     string    `json:"title"`
-	Company   string    `json:"company"`
-	Salary    string    `json:"salary"`
-	Location  string    `json:"location"`
+	ID          int       `json:"id"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+	Title       string    `json:"title"`
+	Provider    int       `json:"provider"`
+	Company     *Company  `json:"company"`
+	Salary      string    `json:"salary"`
+	Location    string    `json:"location"`
+	Link        string    `json:"link"`
+	Description string    `json:"description"`
 }
 
 type JobOutput struct {

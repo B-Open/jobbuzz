@@ -49,6 +49,7 @@ type ComplexityRoot struct {
 		CreatedAt func(childComplexity int) int
 		ID        func(childComplexity int) int
 		Name      func(childComplexity int) int
+		Provider  func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
 	}
 
@@ -64,13 +65,16 @@ type ComplexityRoot struct {
 	}
 
 	Job struct {
-		Company   func(childComplexity int) int
-		CreatedAt func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Location  func(childComplexity int) int
-		Salary    func(childComplexity int) int
-		Title     func(childComplexity int) int
-		UpdatedAt func(childComplexity int) int
+		Company     func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Link        func(childComplexity int) int
+		Location    func(childComplexity int) int
+		Provider    func(childComplexity int) int
+		Salary      func(childComplexity int) int
+		Title       func(childComplexity int) int
+		UpdatedAt   func(childComplexity int) int
 	}
 
 	JobOutput struct {
@@ -151,6 +155,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Company.Name(childComplexity), true
 
+	case "Company.provider":
+		if e.complexity.Company.Provider == nil {
+			break
+		}
+
+		return e.complexity.Company.Provider(childComplexity), true
+
 	case "Company.updatedAt":
 		if e.complexity.Company.UpdatedAt == nil {
 			break
@@ -228,6 +239,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Job.CreatedAt(childComplexity), true
 
+	case "Job.description":
+		if e.complexity.Job.Description == nil {
+			break
+		}
+
+		return e.complexity.Job.Description(childComplexity), true
+
 	case "Job.id":
 		if e.complexity.Job.ID == nil {
 			break
@@ -235,12 +253,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Job.ID(childComplexity), true
 
+	case "Job.link":
+		if e.complexity.Job.Link == nil {
+			break
+		}
+
+		return e.complexity.Job.Link(childComplexity), true
+
 	case "Job.location":
 		if e.complexity.Job.Location == nil {
 			break
 		}
 
 		return e.complexity.Job.Location(childComplexity), true
+
+	case "Job.provider":
+		if e.complexity.Job.Provider == nil {
+			break
+		}
+
+		return e.complexity.Job.Provider(childComplexity), true
 
 	case "Job.salary":
 		if e.complexity.Job.Salary == nil {
@@ -480,9 +512,12 @@ type Job {
   createdAt: Time!
   updatedAt: Time!
   title: String!
-  company: String!
+  provider: Int!
+  company: Company
   salary: String!
   location: String!
+  link: String!
+  description: String!
 }
 
 """
@@ -493,6 +528,7 @@ type Company {
   createdAt: String!
   updatedAt: String!
   name: String!
+  provider: Int!
 }
 
 input StringFilterInput {
@@ -848,6 +884,41 @@ func (ec *executionContext) _Company_name(ctx context.Context, field graphql.Col
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Company_provider(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Company) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Company",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Provider, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CompanyOutput_to(ctx context.Context, field graphql.CollectedField, obj *graphmodel.CompanyOutput) (ret graphql.Marshaler) {
@@ -1267,6 +1338,41 @@ func (ec *executionContext) _Job_title(ctx context.Context, field graphql.Collec
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Job_provider(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Job) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Job",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Provider, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Job_company(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Job) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1292,14 +1398,11 @@ func (ec *executionContext) _Job_company(ctx context.Context, field graphql.Coll
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*graphmodel.Company)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOCompany2ᚖgithubᚗcomᚋbᚑopenᚋjobbuzzᚋpkgᚋgraphᚋgraphmodelᚐCompany(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Job_salary(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Job) (ret graphql.Marshaler) {
@@ -1356,6 +1459,76 @@ func (ec *executionContext) _Job_location(ctx context.Context, field graphql.Col
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Location, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Job_link(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Job) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Job",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Link, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Job_description(ctx context.Context, field graphql.CollectedField, obj *graphmodel.Job) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Job",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3336,6 +3509,16 @@ func (ec *executionContext) _Company(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "provider":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Company_provider(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3495,9 +3678,9 @@ func (ec *executionContext) _Job(ctx context.Context, sel ast.SelectionSet, obj 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "company":
+		case "provider":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Job_company(ctx, field, obj)
+				return ec._Job_provider(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -3505,6 +3688,13 @@ func (ec *executionContext) _Job(ctx context.Context, sel ast.SelectionSet, obj 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "company":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Job_company(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
 		case "salary":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Job_salary(ctx, field, obj)
@@ -3518,6 +3708,26 @@ func (ec *executionContext) _Job(ctx context.Context, sel ast.SelectionSet, obj 
 		case "location":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Job_location(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "link":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Job_link(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "description":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Job_description(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -4769,6 +4979,13 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOCompany2ᚖgithubᚗcomᚋbᚑopenᚋjobbuzzᚋpkgᚋgraphᚋgraphmodelᚐCompany(ctx context.Context, sel ast.SelectionSet, v *graphmodel.Company) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Company(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
