@@ -26,7 +26,7 @@ func (r *mutationResolver) RegisterAccount(ctx context.Context, input graphmodel
 }
 
 func (r *queryResolver) Jobs(ctx context.Context, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) (*graphmodel.JobOutput, error) {
-	jobs, err := r.Service.GetJobs(pagination)
+	jobs, paginationResult, err := r.Service.GetJobs(pagination)
 	if err != nil {
 		return nil, werrors.Wrapf(err, "Error in GetJobs")
 	}
@@ -41,11 +41,16 @@ func (r *queryResolver) Jobs(ctx context.Context, search *graphmodel.StringFilte
 		Data: graphqlJobs,
 	}
 
+	err = copier.Copy(output, paginationResult)
+	if err != nil {
+		return nil, werrors.Wrapf(err, "Error copying pagination result struct")
+	}
+
 	return output, nil
 }
 
 func (r *queryResolver) Companies(ctx context.Context, search *graphmodel.StringFilterInput, pagination graphmodel.PaginationInput) (*graphmodel.CompanyOutput, error) {
-	companies, err := r.Service.GetCompanies(pagination)
+	companies, paginationResult, err := r.Service.GetCompanies(pagination)
 	if err != nil {
 		return nil, werrors.Wrapf(err, "Error in GetCompanies")
 	}
@@ -58,6 +63,11 @@ func (r *queryResolver) Companies(ctx context.Context, search *graphmodel.String
 
 	output := &graphmodel.CompanyOutput{
 		Data: graphqlCompanies,
+	}
+
+	err = copier.Copy(output, paginationResult)
+	if err != nil {
+		return nil, werrors.Wrapf(err, "Error copying pagination result struct")
 	}
 
 	return output, nil
