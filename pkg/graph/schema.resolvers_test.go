@@ -6,6 +6,7 @@ import (
 
 	"github.com/b-open/jobbuzz/pkg/graph/graphmodel"
 	"github.com/b-open/jobbuzz/pkg/model"
+	"github.com/b-open/jobbuzz/pkg/pagination"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -14,26 +15,26 @@ type MockService struct {
 	mock.Mock
 }
 
-func (s *MockService) GetJobs(pagination graphmodel.PaginationInput) ([]*model.Job, error) {
+func (s *MockService) GetJobs(paginationInput graphmodel.PaginationInput) ([]*model.Job, *pagination.PaginationResult, error) {
 	args := s.Called()
 
 	jobs := args.Get(0)
 	if jobs == nil {
-		return nil, args.Error(1)
+		return nil, nil, args.Error(2)
 	}
 
-	return args.Get(0).([]*model.Job), args.Error(1)
+	return args.Get(0).([]*model.Job), args.Get(1).(*pagination.PaginationResult), args.Error(2)
 }
 
-func (s *MockService) GetCompanies(pagination graphmodel.PaginationInput) ([]*model.Company, error) {
+func (s *MockService) GetCompanies(paginationInput graphmodel.PaginationInput) ([]*model.Company, *pagination.PaginationResult, error) {
 	args := s.Called()
 
 	jobs := args.Get(0)
 	if jobs == nil {
-		return nil, args.Error(1)
+		return nil, args.Get(1).(*pagination.PaginationResult), args.Error(2)
 	}
 
-	return args.Get(0).([]*model.Company), args.Error(1)
+	return args.Get(0).([]*model.Company), args.Get(1).(*pagination.PaginationResult), args.Error(2)
 }
 
 func (s *MockService) CreateUser(email string, password string) (string, error) {
@@ -62,17 +63,40 @@ func TestJobs(t *testing.T) {
 				},
 				Title: "test job",
 			},
+		}, &pagination.PaginationResult{
+			To:          1,
+			From:        1,
+			PerPage:     10,
+			CurrentPage: 1,
+			TotalPage:   1,
+			Total:       1,
 		}, nil)
 
 		r := Resolver{Service: &mockService}
 
-		result, err := r.Query().Jobs(nil, nil, graphmodel.PaginationInput{})
+		want := &graphmodel.JobOutput{
+			To:          1,
+			From:        1,
+			PerPage:     10,
+			CurrentPage: 1,
+			TotalPage:   1,
+			Total:       1,
+			Data: []*graphmodel.Job{
+				{
+					ID:    1,
+					Title: "test job",
+				},
+			},
+		}
+
+		got, err := r.Query().Jobs(nil, nil, graphmodel.PaginationInput{Page: 1, Size: 10})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		assert.NotEmpty(t, result.Data, "Jobs should not be empty")
-		assert.Len(t, result.Data, 1)
+		assert.NotEmpty(t, got.Data, "Jobs should not be empty")
+		assert.Len(t, got.Data, 1)
+		assert.Equal(t, want, got)
 	})
 
 	t.Run("test return 20 jobs", func(t *testing.T) {
@@ -86,7 +110,7 @@ func TestJobs(t *testing.T) {
 				Title: "test job",
 			})
 		}
-		mockService.On("GetJobs").Return(mockJobs, nil)
+		mockService.On("GetJobs").Return(mockJobs, &pagination.PaginationResult{}, nil)
 
 		r := Resolver{Service: &mockService}
 
@@ -101,7 +125,7 @@ func TestJobs(t *testing.T) {
 
 	t.Run("test return no jobs", func(t *testing.T) {
 		mockService := MockService{}
-		mockService.On("GetJobs").Return([]*model.Job{}, nil)
+		mockService.On("GetJobs").Return([]*model.Job{}, &pagination.PaginationResult{}, nil)
 
 		r := Resolver{Service: &mockService}
 
@@ -115,7 +139,7 @@ func TestJobs(t *testing.T) {
 
 	t.Run("test error", func(t *testing.T) {
 		mockService := MockService{}
-		mockService.On("GetJobs").Return(nil, errors.New("error"))
+		mockService.On("GetJobs").Return(nil, &pagination.PaginationResult{}, errors.New("error"))
 
 		r := Resolver{Service: &mockService}
 
@@ -129,7 +153,7 @@ func TestCompanies(t *testing.T) {
 		mockService := MockService{}
 		mockService.On("GetCompanies").Return([]*model.Company{
 			{BaseModel: model.BaseModel{ID: 1}},
-		}, nil)
+		}, &pagination.PaginationResult{}, nil)
 
 		r := Resolver{Service: &mockService}
 

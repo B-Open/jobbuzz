@@ -544,8 +544,8 @@ input PaginationInput {
   """
   Standard Pagination Inputs
   """
-  limit: Int = 10
-  offset: Int = 0
+  size: Int! = 10
+  page: Int! = 1
 }
 
 interface PaginatedOutput {
@@ -3319,28 +3319,28 @@ func (ec *executionContext) unmarshalInputPaginationInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	if _, present := asMap["limit"]; !present {
-		asMap["limit"] = 10
+	if _, present := asMap["size"]; !present {
+		asMap["size"] = 10
 	}
-	if _, present := asMap["offset"]; !present {
-		asMap["offset"] = 0
+	if _, present := asMap["page"]; !present {
+		asMap["page"] = 1
 	}
 
 	for k, v := range asMap {
 		switch k {
-		case "limit":
+		case "size":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-			it.Limit, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("size"))
+			it.Size, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "offset":
+		case "page":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
-			it.Offset, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			it.Page, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4986,22 +4986,6 @@ func (ec *executionContext) marshalOCompany2ᚖgithubᚗcomᚋbᚑopenᚋjobbuzz
 		return graphql.Null
 	}
 	return ec._Company(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalInt(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalInt(*v)
-	return res
 }
 
 func (ec *executionContext) marshalOStandardError2ᚖgithubᚗcomᚋbᚑopenᚋjobbuzzᚋpkgᚋgraphᚋgraphmodelᚐStandardError(ctx context.Context, sel ast.SelectionSet, v *graphmodel.StandardError) graphql.Marshaler {
