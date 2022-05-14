@@ -31,9 +31,12 @@ type Job {
   createdAt: Time!
   updatedAt: Time!
   title: String!
-  company: String!
+  provider: Int!
+  company: Company
   salary: String!
   location: String!
+  link: String!
+  description: String!
 }
 
 """
@@ -44,6 +47,7 @@ type Company {
   createdAt: String!
   updatedAt: String!
   name: String!
+  provider: Int!
 }
 
 input StringFilterInput {
